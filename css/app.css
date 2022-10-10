@@ -1,0 +1,105 @@
+.mood, .happy, .sad, .angry, .zen {
+  background-color: #6df36f;
+  font-family: Helvetica, Arial, sans-serif;
+  text-transform: uppercase;
+  padding: 0.4rem 1rem;
+  display: inline-block;
+  margin-inline: 1rem;
+  border: 2px solid black;
+  border-radius: 0px;
+  box-shadow: -6px -6px 0px #000;
+  transition: 0.3s ease-in; }
+  .mood:hover, .happy:hover, .sad:hover, .angry:hover, .zen:hover {
+    translate: -6px -6px;
+    box-shadow: 0 0 0 #000; }
+
+.happy {
+  background-color: #f3d26d; }
+
+.sad {
+  background-color: #5c8ce6; }
+
+.angry {
+  background-color: #e17878; }
+
+.zen {
+  background-color: #f27adc; }
+
+body {
+  margin: 0;
+  padding: 0; }
+
+h1 {
+  color: #eee;
+  font-family: Helvetica, Arial, sans-serif;
+  font-weight: 100;
+  letter-spacing: 0.1rem; }
+
+img.face-img {
+  border-radius: 50%;
+  transition: scale 0.5s ease-in; }
+
+#header {
+  text-align: center;
+  display: block;
+  width: 100%;
+  background-color: #45e3f4; }
+  #header h1 {
+    margin: 0;
+    padding: 10px 0; }
+
+#main-content {
+  width: 100%;
+  padding: 20px 30px;
+  box-sizing: border-box;
+  background-color: #fff;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap; }
+
+#emotions {
+  display: block;
+  text-align: center;
+  padding: 2em; }
+
+#main-nav {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  background-color: #45e3f4;
+  width: 100%;
+  padding: 12px 0; }
+  #main-nav ul {
+    margin: 0;
+    padding: 0;
+    list-style-type: none; }
+    #main-nav ul li {
+      float: left;
+      margin-left: 30px; }
+      #main-nav ul li a {
+        text-decoration: none;
+        font-size: 22px;
+        color: #eee; }
+        #main-nav ul li a:hover {
+          color: red; }
+
+.block {
+  -webkit-border-radius: 50px;
+  -moz-border-radius: 50px;
+  border-radius: 50px;
+  -webkit-box-shadow: 0 0 10px #333;
+  -moz-box-shadow: 0 0 10px #333;
+  box-shadow: 0 0 10px #333;
+  border: 1px solid #333;
+  position: relative;
+  width: 20%;
+  height: 100px;
+  padding: 10px;
+  margin: 15px;
+  display: flex;
+  justify-content: center;
+  overflow: hidden; }
+  .block img {
+    display: none; }
+
+/*# sourceMappingURL=app.css.map */
