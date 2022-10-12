@@ -4,6 +4,7 @@ options: 2x2, 4x4, 6x6
 
 
 const main_content = document.getElementById("main-content");
+const scoreValue = document.getElementById("scoreValue");
 
 let col = 4;
 let row = 2;
@@ -13,14 +14,18 @@ let remainingBlocks = [];           // blocks to be placed
 let blockMap = [];                  // placement
 let selectedBlocks = [];            // two blocks chosen
 
+let score = 0;
+
+
+scoreValue.innerText = score;
 generateBlockMap();
 displayBlocks();
 
 const blocks = document.querySelectorAll(".block");
 const blocksArr = Array.from(blocks); // or  arr = [...nodeList]
-console.log(blocks)
+//console.log(blocks)
 
-let i = 0
+//let i = 0
 
 blocks.forEach((block)=>{
     block.addEventListener('click', ()=>{
@@ -46,7 +51,13 @@ function checkIfBlocksMatch(){
         document.querySelector(`#main-content :nth-child(${selectedBlocks[0]+1})`).classList += " found";
         document.querySelector(`#main-content :nth-child(${selectedBlocks[1]+1})`).classList += " found";
         
-
+        score++;
+        scoreValue.innerText = score;
+        console.log(`Score: ${score}`);
+        
+        if(score>=all_blocks.length){
+            console.log('Well Done!')
+        }
     }else{
         // incorrect blocks selected
         setTimeout(() => {
