@@ -48,7 +48,7 @@ img.face-img {
     margin: 0;
     padding: 10px 0; }
 
-#main-content {
+#mainContent {
   width: 100%;
   padding: 20px 30px;
   box-sizing: border-box;
@@ -101,5 +101,12 @@ img.face-img {
   overflow: hidden; }
   .block img {
     display: none; }
+
+.scoreboard {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center; }
+  .scoreboard #scoreCount {
+    margin-right: 2em; }
 
 /*# sourceMappingURL=app.css.map */
