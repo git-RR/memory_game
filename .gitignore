@@ -1,3 +1,10 @@
+# Sass
+.sass-cache/
+sass/
+
+# Dev notes
+notes.txt
+
 # Logs
 logs
 *.log

@@ -1,42 +1,32 @@
-/*
-options: 2x2, 4x4, 6x6
-*/
-
 
 //const mainContent = document.getElementById("mainContent");
-//const scoreCount = document.getElementById("scoreCount");
-//const tryCount = document.getElementById("tryCount");
+//const scoreboard = document.getElementById("scoreboard");
+
+const homeScreenHTML = `
+    <button id="btnNewGame" class="btn-type-a">New Game</button>
+    <button class="btn-type-a">Load</button>
+    <button class="btn-type-a">Options</button>
+`;
 
 let col = 4;
-let row = 2;
+let row = 4;
 
-const all_blocks = [1,2,3,4];            // all possible blocks
+const all_blocks = [1,2,3,4,5,6,7,8];            // all possible blocks
 let remainingBlocks = [];                // blocks to be placed
 let blockMap = [];                       // placement
 let selectedBlocks = [];                 // two blocks chosen
-
 let scoreValue = 0;
 let tryValue = 0;
-
-
-scoreCount.innerText = scoreValue;
-tryCount.innerText = tryValue;
-
-generateBlockMap();
-displayBlocks();
-
-const blocks = document.querySelectorAll(".block");
-const blocksArr = Array.from(blocks);                   // or  arr = [...nodeList]
-//console.log(blocks)
-
+let blocks = null;
+let blocksArr = null;
 let blockClicked = (event) => {
-    const block = event.target;
+    const block = event.target.parentNode;
     block.removeEventListener('click', blockClicked);   // same block cannot be selected more than once
-    block.children[0].style.display = 'block';
+    block.children[0].style.opacity = '1';
     console.log(blocksArr.indexOf(block));
     selectedBlocks.push(blocksArr.indexOf(block));
     
-    event.target.style.backgroundColor = "red";         // shows blocks that have been selected
+    //event.target.style.backgroundColor = "red";         // shows blocks that have been selected
 
     if(selectedBlocks.length>=2){
         removeBlockEventListeners();                    // prevents more than 2 blocks from being clicked
@@ -46,7 +36,41 @@ let blockClicked = (event) => {
 
 }
 
-addBlockEventListeners();
+homeScreen();
+
+function homeScreen(){
+    scoreboard.innerHTML = `<h1>New Game Name</h1>`;
+    mainContent.innerHTML = homeScreenHTML;
+    const btnNewGame = document.getElementById("btnNewGame");
+    btnNewGame.addEventListener('click', startGame);
+    // btnNewGame.click()
+}
+
+
+function startGame(){
+    mainContent.innerHTML = ``;
+    mainContent.style.flexDirection = "row";    
+    scoreboard.innerHTML = `
+        <h1>Score: <span id="scoreCount"></span></h1>
+        <h1>Try: <span id="tryCount"></span></h1>
+    `;
+
+    //const scoreCount = document.getElementById("scoreCount");
+    //const tryCount = document.getElementById("tryCount");
+    scoreValue = 0;
+    tryValue = 0;
+    
+    scoreCount.innerText = scoreValue;
+    tryCount.innerText = tryValue;
+    
+    generateBlockMap();
+    displayBlocks();
+    
+    blocks = document.querySelectorAll(".block");
+    blocksArr = Array.from(blocks);                   // or  arr = [...nodeList]
+    //console.log(blocks)
+    addBlockEventListeners();
+}
 
 function addBlockEventListeners(){
     blocks.forEach((block)=>{
@@ -86,8 +110,8 @@ function checkIfBlocksMatch(){
     }else{
         // blocks don't match
         setTimeout(() => {
-            block1.querySelector(" :nth-child(1)").style.display = 'none';
-            block2.querySelector(" :nth-child(1)").style.display = 'none';
+            block1.querySelector(" :nth-child(1)").style.opacity = '0';
+            block2.querySelector(" :nth-child(1)").style.opacity = '0';
             // blocks.forEach((block)=>{
             //     if(!block.classList.contains("found")){
             //         block.querySelector(" :nth-child(1)").style.display = 'none';
@@ -103,7 +127,7 @@ function generateBlockMap(){
     // generate random placement of blocks and place in blockMap
 
     all_blocks.forEach((e)=>{
-        for (let r = 0; r < row; r++) {
+        for (let r = 0; r < 2; r++) {
             remainingBlocks.push(e);
         }
     });
@@ -129,6 +153,7 @@ function displayBlocks(){
         mainContent.innerHTML += `
             <div class="block">
                 <img class="face-img" src="images/face-${block}.png" alt="">
+                <div class="blockArea"></div>
             </div>
         `;
     });
