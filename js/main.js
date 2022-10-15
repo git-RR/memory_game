@@ -8,14 +8,17 @@ const homeScreenHTML = `
     <button class="btn-type-a">Options</button>
 `;
 
-let col = 4;
-let row = 4;
 
-const all_blocks = [1,2,3,4,5,6,7,8];            // all possible blocks
+// to change based on screen size
+let col = 6;
+let row = 2;
+
+const all_blocks = [1,2,3,4,5,6,7,8,9,10];    // all possible blocks
 let remainingBlocks = [];                // blocks to be placed
 let blockMap = [];                       // placement
 let selectedBlocks = [];                 // two blocks chosen
 let scoreValue = 0;
+let scorePoint = 1;
 let tryValue = 0;
 let blocks = null;
 let blocksArr = null;
@@ -98,11 +101,12 @@ function checkIfBlocksMatch(){
         block1.classList += " found";                   // add class to keep blocks visible
         block2.classList += " found";
         
-        scoreValue++;
+        scoreValue += scorePoint;
         scoreCount.innerText = scoreValue;
         console.log(`Score: ${scoreValue}`);
-        
-        if(scoreValue>=all_blocks.length){              // end of game
+        console.log("current state: ")
+
+        if(document.querySelectorAll(".block.found").length===row*col){              // end of game
             console.log('Well Done!');
             scoreCount.style.color = "red";
             tryCount.style.color = "red";
@@ -126,17 +130,30 @@ function checkIfBlocksMatch(){
 function generateBlockMap(){
     // generate random placement of blocks and place in blockMap
 
-    all_blocks.forEach((e)=>{
+    if(row*col>=all_blocks.length*2){
+        console.log("Error: row * col > all blocks");
+        return
+    }
+
+    for (let j=0; j<row*col/2; j++) {
         for (let r = 0; r < 2; r++) {
-            remainingBlocks.push(e);
+            remainingBlocks.push(all_blocks[j]);
         }
-    });
+        
+    }
+
+    // all_blocks.forEach((e)=>{
+    //     for (let r = 0; r < 2; r++) {
+    //         remainingBlocks.push(e);
+    //     }
+    // });
     
         for (let c = 0; c < row*col; c++) {
             let randomBlock = Math.floor(Math.random()*remainingBlocks.length)+0; // 0 to 7 index
             blockMap[c] = remainingBlocks[randomBlock];
-            remainingBlocks.splice(randomBlock,1);          // remove element
+            remainingBlocks.splice(randomBlock, 1);          // remove element
         }
+
     // 2-D array
     // for (let r = 0; r < row; r++) {
     //     blockMap.push([]);
@@ -149,14 +166,40 @@ function generateBlockMap(){
 }
 
 function displayBlocks(){
-    blockMap.forEach((block)=>{
-        mainContent.innerHTML += `
-            <div class="block">
-                <img class="face-img" src="images/face-${block}.png" alt="">
-                <div class="blockArea"></div>
-            </div>
+    mainSection.style.height = "auto"
+    mainContent.style.display = 'block';
+
+    let i = 0;
+
+    for (let r=0; r<row; r++) {
+        let rowDisplay = ``;
+        rowDisplay += `
+            <div class="row"> 
         `;
-    });
+        for (let c=0; c<col; c++) {
+            let block = blockMap[i];
+            rowDisplay += `
+                <div class="block">
+                    <img class="face-img col-1" src="images/face-${block}.png" alt="">
+                    <div class="blockArea"></div>
+                </div>
+            `;
+            i++;
+        }
+        rowDisplay += `
+            </div> 
+        `;
+        mainContent.innerHTML += rowDisplay;
+    }
+
+    // blockMap.forEach((block)=>{
+    //     mainContent.innerHTML += `
+    //         <div class="block">
+    //             <img class="face-img" src="images/face-${block}.png" alt="">
+    //             <div class="blockArea"></div>
+    //         </div>
+    //     `;
+    // });
     // blockMap.forEach((blockRow)=>{
     //     blockRow.forEach((e)=>{
     //         mainContent.innerHTML += `
