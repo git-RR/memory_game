@@ -135,24 +135,53 @@ function generateBlockMap(){
         return
     }
 
-    for (let j=0; j<row*col/2; j++) {
-        for (let r = 0; r < 2; r++) {
-            remainingBlocks.push(all_blocks[j]);
-        }
-        
+    let allBlockIndex = [];
+
+    for (let k=0; k<all_blocks.length; k++) {
+        allBlockIndex.push(k);
     }
+    // console.log("block Index:")
+    // console.log(allBlockIndex)
+    
+    for (let j=0; j<row*col/2; j++) {
+        let randomBlockIndex = Math.floor(Math.random()*allBlockIndex.length)+0;
+        for (let r = 0; r < 2; r++) {
+            remainingBlocks.push(all_blocks[allBlockIndex[randomBlockIndex]]);
+        }
+        allBlockIndex.splice(randomBlockIndex, 1); 
+    }
+    
+    for (let c = 0; c < row*col; c++) {
+        let randomBlockIndex = Math.floor(Math.random()*remainingBlocks.length)+0; // 0 to 7 index
+        blockMap[c] = remainingBlocks[randomBlockIndex];
+        remainingBlocks.splice(randomBlockIndex, 1);          // remove element
+    }
+    
+    // populateArray(row*col/2, allBlockIndex.length, 2, remainingBlocks, allBlockIndex);
+    // populateArray(row*col, remainingBlocks.length, 1, blockMap, [])
+    // function populateArray(loopLimit, randomLimit, copies, mainArr, indexArr){
+    //     let flag = indexArr===[]?true:false;
+    //     for (let j=0; j<loopLimit; j++) {
+    //         let randomBlockIndex = Math.floor(Math.random()*randomLimit)+0;
+    //         for (let r = 0; r < copies; r++) {
+    //             mainArr.push(
+    //                 flag?
+    //                     remainingBlocks[randomBlockIndex]:
+    //                     all_blocks[indexArr[randomBlockIndex]]
+    //             );
+    //             console.log(mainArr)
+    //         }
+    //         flag?
+    //         mainArr.splice(randomBlockIndex, 1):
+    //         indexArr.splice(randomBlockIndex, 1);
+    //     }
+    // }
 
     // all_blocks.forEach((e)=>{
     //     for (let r = 0; r < 2; r++) {
     //         remainingBlocks.push(e);
     //     }
     // });
-    
-        for (let c = 0; c < row*col; c++) {
-            let randomBlock = Math.floor(Math.random()*remainingBlocks.length)+0; // 0 to 7 index
-            blockMap[c] = remainingBlocks[randomBlock];
-            remainingBlocks.splice(randomBlock, 1);          // remove element
-        }
 
     // 2-D array
     // for (let r = 0; r < row; r++) {
