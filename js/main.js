@@ -4,7 +4,7 @@
 
 const homeScreenHTML = `
     <button id="btnNewGame" class="btn-type-a">New Game</button>
-    <button class="btn-type-a">Load</button>
+    <button id="btnHighScore" class="btn-type-a">High Score</button>
     <button class="btn-type-a">Options</button>
 `;
 
@@ -39,13 +39,15 @@ let blockClicked = (event) => {
 
 }
 
-homeScreen();
+//homeScreen();
 
 function homeScreen(){
     scoreboard.innerHTML = `<h1>New Game Name</h1>`;
     mainContent.innerHTML = homeScreenHTML;
     const btnNewGame = document.getElementById("btnNewGame");
     btnNewGame.addEventListener('click', startGame);
+    const btnHighScore = document.getElementById("btnHighScore");
+    btnHighScore.addEventListener('click', showHighScore);
     // btnNewGame.click()
 }
 
@@ -104,7 +106,6 @@ function checkIfBlocksMatch(){
         scoreValue += scorePoint;
         scoreCount.innerText = scoreValue;
         console.log(`Score: ${scoreValue}`);
-        console.log("current state: ")
 
         if(document.querySelectorAll(".block.found").length===row*col){              // end of game
             console.log('Well Done!');
@@ -160,7 +161,8 @@ function generateBlockMap(){
     // populateArray(row*col/2, allBlockIndex.length, 2, remainingBlocks, allBlockIndex);
     // populateArray(row*col, remainingBlocks.length, 1, blockMap, [])
     // function populateArray(loopLimit, randomLimit, copies, mainArr, indexArr){
-    //     let flag = indexArr===[]?true:false;
+    //     let flag = indexArr.length===0?true:false;
+    //     console.log("FLAG: "+flag)
     //     for (let j=0; j<loopLimit; j++) {
     //         let randomBlockIndex = Math.floor(Math.random()*randomLimit)+0;
     //         for (let r = 0; r < copies; r++) {
@@ -169,7 +171,6 @@ function generateBlockMap(){
     //                     remainingBlocks[randomBlockIndex]:
     //                     all_blocks[indexArr[randomBlockIndex]]
     //             );
-    //             console.log(mainArr)
     //         }
     //         flag?
     //         mainArr.splice(randomBlockIndex, 1):
@@ -253,3 +254,15 @@ function displayBlocks(){
     console.log("-----------")
 }
 
+// HIGH SCORE BOARD
+
+function showHighScore(){
+    mainContent.innerHTML = ``;
+    mainContent.style.flexDirection = "row";
+    mainSection.style.height = "auto"
+    mainContent.style.display = 'block';
+
+    // const highSorePage = `
+    //     <button class="btn-type-a">Options</button>
+    // `;
+}
