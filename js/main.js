@@ -255,14 +255,75 @@ function displayBlocks(){
 }
 
 // HIGH SCORE BOARD
-
-function showHighScore(){
+showHighScore();
+async function showHighScore(){
     mainContent.innerHTML = ``;
     mainContent.style.flexDirection = "row";
-    mainSection.style.height = "auto"
+    mainSection.style.height = "auto";
     mainContent.style.display = 'block';
 
-    // const highSorePage = `
-    //     <button class="btn-type-a">Options</button>
-    // `;
+    let highSorePage = `
+        <div class="row">
+            <table class="col-12">
+                <thead>
+                    <tr>
+                        <th class="col-6">Player Name</th>
+                        <th class="col-6">Score</th>
+                    </tr>
+                </thead>
+                <tbody style="text-align: center;">    
+    
+
+    `;
+
+    let highScores = await getHighScore();
+    console.log(highScores)
+
+    for(i=0; i<highScores.length; i++){
+        highSorePage += `
+            <tr>
+                <td>${highScores[i].name}</td>
+                <td>${highScores[i].score}</td>
+            </tr>
+        `;
+    }
+    
+
+
+    highSorePage += `
+                </tbody>
+            </table>
+        </div>
+        <button id="btnReturnToHome" class="btn-type-a">Return</button>
+    `;
+    mainContent.innerHTML = highSorePage;
+}
+
+async function getHighScore(){
+    const response = await fetch("/api");
+    const json = await response.json();
+    // console.log(response)
+    // console.log(json);
+    return sortHighScore(json);
+}
+
+function sortHighScore(scores){
+    let sortedScores = [...scores];
+    for (let i = 0; i < scores.length; i++) {
+        // console.log("i="+i)
+        for (let j = i+1; j < scores.length; j++) {
+            // console.log(sortedScores[i].score+" < "+sortedScores[j].score+" ?")
+            if(parseInt(sortedScores[i].score)<parseInt(sortedScores[j].score)){
+                // console.log("yes")
+                let temp = sortedScores[i];
+                sortedScores[i] = sortedScores[j];
+                sortedScores[j] = temp;
+            }else{
+                // console.log("no")
+            }
+        }
+    }
+    // console.log("sorted scores:");
+    // console.log(sortedScores);
+    return sortedScores;
 }
