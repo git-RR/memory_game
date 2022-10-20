@@ -7,7 +7,7 @@ const port = process.env.PORT || 5001;
 app.listen(port, ()=>{console.log(`listening @ port ${port}`)});
 app.use(express.json());
 
-app.use(express.static('../'));
+app.use(express.static('../'));     // for testing only
 
 app.get('/api', (request, response)=>{
 	// response.json({message: 'the database is connected.'});
@@ -22,7 +22,7 @@ app.get('/api', (request, response)=>{
 
 // async function main(data){
 //     const password = process.env.DB_PWD || "";
-//     const uri = `mongodb+srv://...`;
+//     const uri = `mongodb+srv://robot-army:<password>@cluster0.cxoh44a.mongodb.net/?retryWrites=true&w=majority`;
 //     const client = new MongoClient(uri);
 //     try {
 //         await client.connect();

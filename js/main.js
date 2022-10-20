@@ -271,9 +271,7 @@ async function showHighScore(){
                         <th class="col-6">Score</th>
                     </tr>
                 </thead>
-                <tbody style="text-align: center;">    
-    
-
+                <tbody style="text-align: center;">
     `;
 
     let highScores = await getHighScore();
@@ -287,8 +285,6 @@ async function showHighScore(){
             </tr>
         `;
     }
-    
-
 
     highSorePage += `
                 </tbody>
@@ -327,3 +323,15 @@ function sortHighScore(scores){
     // console.log(sortedScores);
     return sortedScores;
 }
+
+function checkCurrentScore(currentScore, sortedScores){
+    let deleteScoreId = '';
+    if(currentScore > sortedScores[sortedScores.length-1].score){
+        // send currentScore to database
+        deleteScoreId = sortedScores[sortedScores.length-1].id
+        // send ID of lowest score to database, to be removed
+    }else{
+        // do nothing
+    }
+}
+
