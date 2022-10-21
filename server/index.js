@@ -1,4 +1,5 @@
 const express = require("express");
+const { sample } = require("underscore");
 //const {MongoClient} = require("mongodb");
 
 const app = express();
@@ -14,11 +15,27 @@ app.get('/api', (request, response)=>{
     response.json(sample_data)
 });
 
-// app.post("./api", async (request, response)=>{
-//     const data = request.body;
-//     await main(data);
-//     response.end();
-// });
+app.post("/api", async (request, response)=>{
+    const data = request.body;
+    //await main(data);
+    console.log('New High Score:');
+    console.log(data);
+    sample_data.push({name:data.name, score:data.score, id:''});
+
+    console.log('Added High Score to List:');
+    console.log(sample_data);
+
+    // remove lowest score
+    sample_data.forEach((scoreObj)=>{
+        if(scoreObj.id === data.id){
+            sample_data.splice(sample_data.indexOf(scoreObj), 1);
+        }
+    });
+
+    console.log('New High Score List:');
+    console.log(sample_data);
+    response.json({data: 'high score list updated!'});
+});
 
 // async function main(data){
 //     const password = process.env.DB_PWD || "";
