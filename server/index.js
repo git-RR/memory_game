@@ -37,18 +37,37 @@ app.post("/api", async (request, response)=>{
     response.json({data: 'high score list updated!'});
 });
 
-// async function main(data){
-//     const password = process.env.DB_PWD || "";
-//     const uri = `mongodb+srv://robot-army:<password>@cluster0.cxoh44a.mongodb.net/?retryWrites=true&w=majority`;
-//     const client = new MongoClient(uri);
-//     try {
-//         await client.connect();
-//     } catch (error) {
-//         console.error(error)
-//     }finally{
-//         await client.close();
-//     }
-// }
+
+async function main(data){
+    const newHighScore = {name:"", score:""};
+    const id = "";
+    
+    const password = process.env.DB_PWD || "";
+    const uri = `mongodb+srv://robot-army:<password>@cluster0.cxoh44a.mongodb.net/?retryWrites=true&w=majority`;
+    const client = new MongoClient(uri);
+
+    try {
+        await client.connect();
+
+        await addNewHighScore(client, newHighScore);
+        await deleteOldHighScore(client, id);
+
+    } catch (error) {
+        console.error(error)
+    }finally{
+        await client.close();
+    }
+}
+
+async function addNewHighScore(client, newHighScore){
+	const result = await client.db("DATABASE_NAME").collection("COLLECTION_NAME").insertOne(newHighScore);
+	console.log(`New high score added with id: ${result.insertedId}`);
+}
+
+async function deleteOldHighScore(client, id){
+    const result = await client.db("DATABASE_NAME").collection("COLLECTION_NAME").deleteOne({_id:id});
+    console.log(`${result.deleteCount} document(s) was/were deleted.`)
+}
 
 let sample_data = [
     {
