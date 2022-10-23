@@ -18,6 +18,7 @@ app.get('/api', (request, response)=>{
 app.post("/api", async (request, response)=>{
     const data = request.body;
     //await main(data);
+
     console.log('New High Score:');
     console.log(data);
     sample_data.push({name:data.name, score:data.score, id:''});
@@ -39,9 +40,9 @@ app.post("/api", async (request, response)=>{
 
 
 async function main(data){
-    const newHighScore = {name:"", score:""};
-    const id = "";
-    
+    const newHighScore = {name:data.name, score:data.score};
+    const id = data.id;
+
     const password = process.env.DB_PWD || "";
     const uri = `mongodb+srv://robot-army:<password>@cluster0.cxoh44a.mongodb.net/?retryWrites=true&w=majority`;
     const client = new MongoClient(uri);
