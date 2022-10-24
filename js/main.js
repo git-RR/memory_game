@@ -10,7 +10,7 @@ const homeScreenHTML = `
 
 
 // to change based on screen size
-let col = 6;
+let col = 1;
 let row = 2;
 
 const all_blocks = [1,2,3,4,5,6,7,8,9,10];    // all possible blocks
@@ -18,7 +18,7 @@ let remainingBlocks = [];                // blocks to be placed
 let blockMap = [];                       // placement
 let selectedBlocks = [];                 // two blocks chosen
 let scoreValue = 0;
-let scorePoint = 1;
+let scorePoint = 100;
 let tryValue = 0;
 let blocks = null;
 let blocksArr = null;
@@ -40,7 +40,7 @@ let blockClicked = (event) => {
 
 }
 
-//homeScreen();
+homeScreen();
 
 function homeScreen(){
     scoreboard.innerHTML = `<h1>New Game Name</h1>`;
@@ -349,13 +349,13 @@ let player_name = "";
 function highScorePlayerName(){
     //get player name
     mainContent.innerHTML = `
-        <input id="playerName" type="text">
-        <button id="btnSubmitHighScore" type="button">
-        <button id="btnCancelHighScore" type="button">
+        <input id="playerName" type="text" class="inputField">
+        <button id="btnSubmitHighScore" class="btn-type-a">Submit</button>
+        <button id="btnCancelHighScore" class="btn-type-a">Cancel</button>
     `;
-    btnSubmitHighScore.addEventListener('click',()=>{
+    btnSubmitHighScore.addEventListener('click',async ()=>{
         player_name = playerName.value;
-        checkCurrentScore(scoreValue, getHighScore());
+        checkCurrentScore(scoreValue, await getHighScore());
     });
 }
 
