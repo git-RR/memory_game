@@ -56,6 +56,31 @@ img.face-img {
   border-radius: 50%;
   transition: opacity 0.5s ease-in; }
 
+table {
+  border-collapse: collapse;
+  font-family: Helvetica, Arial, sans-serif;
+  margin-bottom: 10px; }
+  table thead {
+    font-size: 1.2rem; }
+    table thead th {
+      padding: 0.4rem; }
+  table tbody {
+    font-size: 1rem; }
+    table tbody td {
+      padding: 0.6rem; }
+
+input {
+  -webkit-border-radius: 12px;
+  -moz-border-radius: 12px;
+  border-radius: 12px;
+  -webkit-box-shadow: -6px -6px 0 0 black;
+  -moz-box-shadow: -6px -6px 0 0 black;
+  box-shadow: -6px -6px 0 0 black;
+  border: 2px solid black;
+  padding: 20px;
+  width: 250px;
+  box-sizing: border-box; }
+
 #header {
   text-align: center;
   display: block;
@@ -85,7 +110,6 @@ img.face-img {
     margin-right: 2em; }
 
 .row {
-  background: #abc;
   display: flex;
   flex-wrap: nowrap;
   justify-content: center;
@@ -143,7 +167,7 @@ img.face-img {
   transition: 0.4s ease-in-out;
   background-color: #eee;
   color: #333;
-  width: 100%;
+  width: 250px;
   padding: 1em 2em;
   margin: 1em 0;
   font-family: Helvetica, Arial, sans-serif;
