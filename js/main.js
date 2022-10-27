@@ -10,8 +10,8 @@ const homeScreenHTML = `
 
 
 // to change based on screen size
-let col = 1;
-let row = 2;
+let col = 4;
+let row = 1;
 
 const all_blocks = [1,2,3,4,5,6,7,8,9,10];    // all possible blocks
 let remainingBlocks = [];                // blocks to be placed
@@ -44,6 +44,7 @@ homeScreen();
 
 function homeScreen(){
     scoreboard.innerHTML = `<h1>New Game Name</h1>`;
+    mainContent.style.flexDirection = "column";
     mainContent.innerHTML = homeScreenHTML;
     const btnNewGame = document.getElementById("btnNewGame");
     btnNewGame.addEventListener('click', startGame);
@@ -132,11 +133,28 @@ function checkIfBlocksMatch(){
 }
 
 function endGame(){
-    // after game ends
-    if(endOfGameFlag){
-        highScorePlayerName();
-        endOfGameFlag = false;
-    }
+    setTimeout(()=>{
+        // after game ends
+        if(endOfGameFlag){
+            highScorePlayerName();
+            endOfGameFlag = false;
+        }
+    }, 2000);
+    const endGameText = `
+        <div 
+            style="
+                position: absolute; top:0; left:0; 
+                background-color:rgba(0,0,0,0.7); 
+                display: flex; align-items: center; justify-content: center;
+                width: 100%; height: 100%; text-align:center;
+            "
+        >
+            <h4 style="color: white; font-size: 6rem;font-family: sans-serif;">
+                Well Done!
+            </h4>
+        </div>
+    `;
+    mainContent.innerHTML += endGameText;
 }
 
 function generateBlockMap(){
@@ -272,8 +290,8 @@ function displayBlocks(){
 async function showHighScore(){
     mainContent.innerHTML = ``;
     mainContent.style.flexDirection = "row";
-    mainSection.style.height = "auto";
-    mainContent.style.display = 'block';
+    // mainSection.style.height = "auto";
+    // mainContent.style.display = 'block';
 
     let highSorePage = `
         <div class="row">
@@ -303,16 +321,24 @@ async function showHighScore(){
                 </tbody>
             </table>
         </div>
-        <button id="btnReturnToHome" class="btn-type-a">Return</button>
+        <button id="btnReturnHome" class="btn-type-a">Return</button>
     `;
     mainContent.innerHTML = highSorePage;
-
+    
+    addEventListenerBtnReturnHome(btnReturnHome);
+    
     // // after game ends
     // if(endOfGameFlag){
     //     let currentScore = 50;
     //     checkCurrentScore(currentScore, highScores);
     //     endOfGameFlag = false;
     // }
+}
+
+function addEventListenerBtnReturnHome(btnId){
+    btnId.addEventListener('click', ()=>{
+        homeScreen();
+    });
 }
 
 async function getHighScore(){
@@ -348,6 +374,8 @@ let player_name = "";
 
 function highScorePlayerName(){
     //get player name
+    mainContent.style.display = "flex";
+    mainContent.style.flexDirection = "column";
     mainContent.innerHTML = `
         <input id="playerName" type="text" class="inputField">
         <button id="btnSubmitHighScore" class="btn-type-a">Submit</button>
@@ -357,6 +385,7 @@ function highScorePlayerName(){
         player_name = playerName.value;
         checkCurrentScore(scoreValue, await getHighScore());
     });
+    addEventListenerBtnReturnHome(btnCancelHighScore);
 }
 
 async function checkCurrentScore(currentScore, sortedScores){
