@@ -5,7 +5,7 @@
 const homeScreenHTML = `
     <button id="btnNewGame" class="btn-type-a">New Game</button>
     <button id="btnHighScore" class="btn-type-a">High Score</button>
-    <button class="btn-type-a">Options</button>
+    <button id="btnOptions" class="btn-type-a">Options</button>
 `;
 
 
@@ -50,9 +50,68 @@ function homeScreen(){
     btnNewGame.addEventListener('click', startGame);
     const btnHighScore = document.getElementById("btnHighScore");
     btnHighScore.addEventListener('click', showHighScore);
+    const btnOptions = document.getElementById("btnOptions");
+    btnOptions.addEventListener('click', showOptions);
     // btnNewGame.click()
 }
 
+function showOptions(){
+    mainContent.innerHTML = ``;
+    mainContent.style.flexDirection = "column";
+    scoreboard.innerHTML = `
+        <h1>Options Menu</h1>
+    `;
+
+    let optionsPage = `
+        <div class="row">
+            <table class="col-12">
+                <tbody style="text-align: center;">
+                    <tr>
+                        <td>Display Mode</td>
+                        <td>
+                            <button id="btnOptionModeDark" class="btnOption">Dark</button>
+                            <button id="btnOptionModeLight" class="btnOption clicked">Light</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <button id="btnReturnHome" class="btn-type-a">Return</button>
+    `;
+    mainContent.innerHTML = optionsPage;
+    
+    addEventListenerBtnReturnHome(btnReturnHome);
+
+    btnOptionModeDark.addEventListener('click', changeMode);
+    btnOptionModeLight.addEventListener('click', changeMode);
+
+}
+
+function changeMode(event){
+    const btnClicked = event.target;
+    console.log( 'Mode : '+btnClicked );
+    if (btnClicked.innerText === 'Dark' ) {
+        addDarkModeClass(mainSection);
+        btnOptionModeLight.classList.remove('clicked');
+    } else if( btnClicked.innerText === 'Light' ) {
+        removeDarkModeClass(mainSection);
+        btnOptionModeDark.classList.remove('clicked');
+    }
+    btnClicked.classList.add('clicked');
+    console.log(btnClicked.classList)
+}
+
+function addDarkModeClass(element){
+    if(!element.classList.contains('darkMode')){
+        element.classList.add('darkMode');
+    }
+}
+
+function removeDarkModeClass(element){
+    if(element.classList.contains('darkMode')){
+        element.classList.remove('darkMode');
+    }
+}
 
 function startGame(){
     mainContent.innerHTML = ``;
@@ -133,15 +192,6 @@ function checkIfBlocksMatch(){
 }
 
 function endGame(){
-    setTimeout(()=>{
-        // after game ends
-        if(endOfGameFlag){
-            //if(current score > lowest high score) { checkCurrentScore() }
-            highScorePlayerName();
-            // else return to homepage
-            endOfGameFlag = false;
-        }
-    }, 2000);
     const endGameText = `
         <div 
             style="
@@ -156,7 +206,20 @@ function endGame(){
             </h4>
         </div>
     `;
-    mainContent.innerHTML += endGameText;
+    setTimeout(()=>{
+        mainContent.innerHTML += endGameText;
+    }, 800);
+
+    setTimeout(()=>{
+        // after game ends
+        if(endOfGameFlag){
+            //if(current score > lowest high score) { checkCurrentScore() }
+            highScorePlayerName();
+            // else return to homepage
+            endOfGameFlag = false;
+        }
+    }, 2000);
+    
 }
 
 function generateBlockMap(){
