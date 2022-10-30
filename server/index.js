@@ -50,7 +50,7 @@ app.post("/api", async (request, response)=>{
     response.json({data: 'high score list updated!'});
     /* end test code */
 });
-main()
+//main()
 async function main(){
     // const newHighScore = {name:data.name, score:data.score};
     // const id = data.id;
@@ -73,9 +73,9 @@ async function main(){
     } catch (error) {
         console.error(error)
     }
-    // finally{
-    //     await client.close();
-    // }
+    finally{
+        await client.close();
+    }
 }
 
 async function addNewHighScore(client, newHighScore){

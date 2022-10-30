@@ -109,8 +109,7 @@ input {
   #scoreboard h1 {
     margin-top: 0; }
   #scoreboard #scoreCount {
-    margin-right: 2em;
-    color: #fff; }
+    margin-right: 2em; }
 
 .row {
   display: flex;

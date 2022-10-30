@@ -18,11 +18,11 @@ let remainingBlocks = [];                // blocks to be placed
 let blockMap = [];                       // placement
 let selectedBlocks = [];                 // two blocks chosen
 let scoreValue = 0;
-let scorePoint = 100;
+let scorePoint = 0;
 let tryValue = 0;
 let blocks = null;
 let blocksArr = null;
-let endOfGameFlag = true;
+//let endOfGameFlag = false;
 let blockClicked = (event) => {
     const block = event.target.parentNode;
     block.removeEventListener('click', blockClicked);   // same block cannot be selected more than once
@@ -55,6 +55,8 @@ function homeScreen(){
     // btnNewGame.click()
 }
 
+let darkMode = false;  // move to localStorage
+
 function showOptions(){
     mainContent.innerHTML = ``;
     mainContent.style.flexDirection = "column";
@@ -69,8 +71,8 @@ function showOptions(){
                     <tr>
                         <td>Display Mode</td>
                         <td>
-                            <button id="btnOptionModeDark" class="btnOption">Dark</button>
-                            <button id="btnOptionModeLight" class="btnOption clicked">Light</button>
+                            <button id="btnOptionModeDark" class="btnOption ${(darkMode)?'clicked':''}">Dark</button>
+                            <button id="btnOptionModeLight" class="btnOption ${(darkMode)?'':'clicked'}">Light</button>
                         </td>
                     </tr>
                 </tbody>
@@ -89,16 +91,18 @@ function showOptions(){
 
 function changeMode(event){
     const btnClicked = event.target;
-    console.log( 'Mode : '+btnClicked );
+    // console.log( 'Mode : '+btnClicked );
     if (btnClicked.innerText === 'Dark' ) {
+        darkMode = true;
         addDarkModeClass(mainSection);
         btnOptionModeLight.classList.remove('clicked');
     } else if( btnClicked.innerText === 'Light' ) {
+        darkMode = false;
         removeDarkModeClass(mainSection);
         btnOptionModeDark.classList.remove('clicked');
     }
     btnClicked.classList.add('clicked');
-    console.log(btnClicked.classList)
+    // console.log(btnClicked.classList)
 }
 
 function addDarkModeClass(element){
@@ -172,7 +176,7 @@ function checkIfBlocksMatch(){
             console.log('Well Done!');
             scoreCount.style.color = "red";
             tryCount.style.color = "red";
-            endOfGameFlag = true;
+            //endOfGameFlag = true;
             endGame();
         }
     }else{
@@ -191,7 +195,7 @@ function checkIfBlocksMatch(){
     selectedBlocks = [];                                // reset selection
 }
 
-function endGame(){
+async function endGame(){
     const endGameText = `
         <div 
             style="
@@ -206,20 +210,30 @@ function endGame(){
             </h4>
         </div>
     `;
+
     setTimeout(()=>{
         mainContent.innerHTML += endGameText;
     }, 800);
 
+    const sortedScores = await getHighScore();
+
     setTimeout(()=>{
         // after game ends
-        if(endOfGameFlag){
-            //if(current score > lowest high score) { checkCurrentScore() }
-            highScorePlayerName();
-            // else return to homepage
-            endOfGameFlag = false;
-        }
+        //if( endOfGameFlag ){
+            if( scoreValue > parseInt(sortedScores[sortedScores.length-1].score) ){
+                deleteScoreId = sortedScores[sortedScores.length-1]._id  // global variable
+                getHighScorePlayerName();
+            }else{
+                showHighScore(); // show high scores at end of game
+                //homepage();
+            }
+            //endOfGameFlag = false;
+        //}
     }, 2000);
     
+    // checkCurrentScore(scoreValue, scores);
+    
+
 }
 
 function generateBlockMap(){
@@ -353,8 +367,13 @@ function displayBlocks(){
 
 
 async function showHighScore(){
-    mainContent.innerHTML = ``;
-    mainContent.style.flexDirection = "row";
+    mainContent.innerHTML = `
+        <h1>Loading...</h1>
+        <button id="btnReturnHome" class="btn-type-a">Return</button>
+    `;
+    mainContent.style.display = "flex";
+    mainContent.style.flexDirection = "column";
+    addEventListenerBtnReturnHome(btnReturnHome);
     // mainSection.style.height = "auto";
     // mainContent.style.display = 'block';
 
@@ -371,7 +390,7 @@ async function showHighScore(){
     `;
 
     let highScores = await getHighScore();
-    console.log(highScores)
+    //console.log(highScores)
 
     for(i=0; i<highScores.length; i++){
         highSorePage += `
@@ -391,13 +410,6 @@ async function showHighScore(){
     mainContent.innerHTML = highSorePage;
     
     addEventListenerBtnReturnHome(btnReturnHome);
-    
-    // // after game ends
-    // if(endOfGameFlag){
-    //     let currentScore = 50;
-    //     checkCurrentScore(currentScore, highScores);
-    //     endOfGameFlag = false;
-    // }
 }
 
 function addEventListenerBtnReturnHome(btnId){
@@ -438,20 +450,42 @@ async function getHighScore(){
 // }
 
 let player_name = "";
+let deleteScoreId = "";
 
 async function submitHighScore(){
-    player_name = playerName.value;
+    player_name = playerName.value; // global 
+
+    let newHighScore = {
+        name: player_name,
+        score: scoreValue,
+        id: deleteScoreId,
+    };
+
+    // console.log('DATA SENT TO DATABASE: ')
+    // console.log(newHighScore);
+
+    const options = {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', },
+        body: JSON.stringify(newHighScore),
+    };
     
     // basic input validation - to be expanded later
     if( player_name.length>0 && player_name.length<=16 ){
         btnSubmitHighScore.removeEventListener('click', submitHighScore);
-        const scores = await getHighScore();
-        checkCurrentScore(scoreValue, scores);
+        // const scores = await getHighScore();
+        // checkCurrentScore(scoreValue, scores); // moved to endgame()
+        
+        const response = await fetch('/api', options);
+        const json = await response.json();
+
+        console.log(json.data);
+        showHighScore();                    // show high score list with new high score
     }
 
 }
 
-function highScorePlayerName(){
+function getHighScorePlayerName(){
     //get player name
     mainContent.style.display = "flex";
     mainContent.style.flexDirection = "column";
@@ -464,36 +498,36 @@ function highScorePlayerName(){
     addEventListenerBtnReturnHome(btnCancelHighScore);
 }
 
-async function checkCurrentScore(currentScore, sortedScores){
-    if(currentScore > sortedScores[sortedScores.length-1].score){
-        // send ID of lowest score to database, to be removed
-        let deleteScoreId = sortedScores[sortedScores.length-1]._id
+// async function checkCurrentScore(currentScore, sortedScores){
+    // if(currentScore > sortedScores[sortedScores.length-1].score){
+    //     // send ID of lowest score to database, to be removed
+    //     let deleteScoreId = sortedScores[sortedScores.length-1]._id
 
-        let newHighScore = {
-            name: player_name,
-            score: currentScore,
-            id: deleteScoreId       // a new id will be generated by database when new record added
-        };
+    //     let newHighScore = {
+    //         name: player_name,
+    //         score: currentScore,
+    //         id: deleteScoreId       // a new id will be generated by database when new record added
+    //     };
 
-        console.log('DATA SENT TO DATABASE: ')
-        console.log(newHighScore);
+    //     // console.log('DATA SENT TO DATABASE: ')
+    //     // console.log(newHighScore);
 
-        // send currentScore to database
-        const options = {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(newHighScore),
-        };
+    //     // send currentScore to database
+    //     const options = {
+    //         method: 'POST',
+    //         headers: {
+    //             'Content-Type': 'application/json',
+    //         },
+    //         body: JSON.stringify(newHighScore),
+    //     };
 
-        const response = await fetch('/api', options);
-        const json = await response.json();
-        console.log(json.data);
+    //     // const response = await fetch('/api', options);
+    //     // const json = await response.json();
+    //     // console.log(json.data);      // moved to submit()
         
-        showHighScore(); // refresh high score list
-    }else{
-        // do nothing
-    }
-}
+    //     showHighScore(); // refresh high score list
+    // }else{
+    //     // do nothing
+    // }
+// }
 
