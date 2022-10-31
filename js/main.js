@@ -13,13 +13,13 @@ const homeScreenHTML = `
 let col = 4;
 let row = 1;
 
-const all_blocks = [1,2,3,4,5,6,7,8,9,10];    // all possible blocks
-let remainingBlocks = [];                // blocks to be placed
-let blockMap = [];                       // placement
-let selectedBlocks = [];                 // two blocks chosen
-let scoreValue = 0;
-let scorePoint = 0;
-let tryValue = 0;
+const all_blocks = [1,2,3,4,5,6,7,8,9,10];      // all possible blocks
+let remainingBlocks = [];                       // blocks to be placed
+let blockMap = [];                              // placement
+let selectedBlocks = [];                        // two blocks chosen
+let scoreValue = 0;                             // player's score
+let scorePoint = 0;                             // value added to score on each correct move
+let tryValue = 0;                               // number of attempts; to be used in score calc
 let blocks = null;
 let blocksArr = null;
 //let endOfGameFlag = false;
@@ -44,6 +44,7 @@ homeScreen();
 
 function homeScreen(){
     scoreboard.innerHTML = `<h1>New Game Name</h1>`;
+    mainContent.style.display = "flex";
     mainContent.style.flexDirection = "column";
     mainContent.innerHTML = homeScreenHTML;
     const btnNewGame = document.getElementById("btnNewGame");
@@ -215,24 +216,28 @@ async function endGame(){
         mainContent.innerHTML += endGameText;
     }, 800);
 
-    const sortedScores = await getHighScore();
+    try{
+        const sortedScores = await getHighScore();
 
-    setTimeout(()=>{
-        // after game ends
-        //if( endOfGameFlag ){
+        if(sortedScores.length===0){
+            throw "getHighScore() returned []";
+        }
+
+        setTimeout(()=>{
             if( scoreValue > parseInt(sortedScores[sortedScores.length-1].score) ){
                 deleteScoreId = sortedScores[sortedScores.length-1]._id  // global variable
                 getHighScorePlayerName();
             }else{
                 showHighScore(); // show high scores at end of game
-                //homepage();
             }
-            //endOfGameFlag = false;
-        //}
-    }, 2000);
-    
-    // checkCurrentScore(scoreValue, scores);
-    
+        }, 2000);
+
+    } catch (error){
+        setTimeout(()=>{
+            homeScreen();
+        }, 2000);
+        console.log(error);
+    }
 
 }
 
@@ -367,49 +372,75 @@ function displayBlocks(){
 
 
 async function showHighScore(){
-    mainContent.innerHTML = `
-        <h1>Loading...</h1>
-        <button id="btnReturnHome" class="btn-type-a">Return</button>
-    `;
+
     mainContent.style.display = "flex";
     mainContent.style.flexDirection = "column";
-    addEventListenerBtnReturnHome(btnReturnHome);
-    // mainSection.style.height = "auto";
-    // mainContent.style.display = 'block';
 
-    let highSorePage = `
-        <div class="row">
-            <table class="col-12">
-                <thead>
-                    <tr>
-                        <th class="col-6">Player Name</th>
-                        <th class="col-6">Score</th>
-                    </tr>
-                </thead>
-                <tbody style="text-align: center;">
-    `;
+    if( navigator.onLine ){
+        console.log('ONline');
 
-    let highScores = await getHighScore();
-    //console.log(highScores)
-
-    for(i=0; i<highScores.length; i++){
-        highSorePage += `
-            <tr>
-                <td>${highScores[i].name}</td>
-                <td>${highScores[i].score}</td>
-            </tr>
+        mainContent.innerHTML = `
+            <h1>Loading...</h1>
+            <button id="btnReturnHome" class="btn-type-a">Return</button>
         `;
-    }
+        addEventListenerBtnReturnHome(btnReturnHome);
 
-    highSorePage += `
-                </tbody>
-            </table>
-        </div>
-        <button id="btnReturnHome" class="btn-type-a">Return</button>
-    `;
-    mainContent.innerHTML = highSorePage;
+        try {
+            let highSorePage = `
+                <div class="row">
+                    <table class="col-12">
+                        <thead>
+                            <tr>
+                                <th class="col-6">Player Name</th>
+                                <th class="col-6">Score</th>
+                            </tr>
+                        </thead>
+                        <tbody style="text-align: center;">
+            `;
+
+            let highScores = await getHighScore();
+            //console.log(highScores)
+
+            if(highScores.length===0){
+                throw "getHighScore() returned []";
+            }
+
+            for(i=0; i<highScores.length; i++){
+                highSorePage += `
+                    <tr>
+                        <td>${highScores[i].name}</td>
+                        <td>${highScores[i].score}</td>
+                    </tr>
+                `;
+            }
+
+            highSorePage += `
+                        </tbody>
+                    </table>
+                </div>
+                <button id="btnReturnHome" class="btn-type-a">Return</button>
+            `;
+            mainContent.innerHTML = highSorePage;
+        } catch (error) {
+            mainContent.innerHTML =  `
+                <h1>Cannot connect to database.</h1>
+                <button id="btnReturnHome" class="btn-type-a">Return</button>
+            `;
+            console.log(error)
+        } finally {
+            addEventListenerBtnReturnHome(btnReturnHome);
+        }
+
+    }else{
+        console.log('OFFline');
+
+        mainContent.innerHTML = `
+            <h1>You're not connected.</h1>
+            <button id="btnReturnHome" class="btn-type-a">Return</button>
+        `;
+        addEventListenerBtnReturnHome(btnReturnHome);
+    } 
     
-    addEventListenerBtnReturnHome(btnReturnHome);
 }
 
 function addEventListenerBtnReturnHome(btnId){
@@ -419,13 +450,22 @@ function addEventListenerBtnReturnHome(btnId){
 }
 
 async function getHighScore(){
-    const response = await fetch("/api");
-    const json = await response.json();
-    // console.log(response)
-    let sortedScores = [...json];
-    console.log(sortedScores);
-    // return sortHighScore(json);
-    return sortedScores;
+    if(navigator.onLine){
+        try{
+            const response = await fetch("/api");
+            const json = await response.json();
+            // console.log(response)
+            let sortedScores = [...json];
+            console.log(sortedScores);
+            // return sortHighScore(json);
+            return sortedScores;
+        } catch(error){
+            console.log(error);
+            return [];
+        }
+    }else{
+        return [];
+    }
 }
 
 // function sortHighScore(scores){

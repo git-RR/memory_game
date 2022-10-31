@@ -57,7 +57,7 @@ async function main(){
 
     const password = process.env.DB_PWD || "yQnn0dQGTdd4Sy2766";
     const uri = `mongodb+srv://robot-army:${password}@cluster0.cxoh44a.mongodb.net/?retryWrites=true&w=majority`;
-    const client = new MongoClient(uri);
+    //const client = new MongoClient(uri);
 
     try {
         await client.connect();
@@ -73,9 +73,9 @@ async function main(){
     } catch (error) {
         console.error(error)
     }
-    finally{
-        await client.close();
-    }
+    // finally{
+    //     await client.close(); // client is used elsewhere; will not function if closed here
+    // }
 }
 
 async function addNewHighScore(client, newHighScore){
