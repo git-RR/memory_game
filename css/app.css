@@ -27,7 +27,8 @@
 
 body {
   margin: 0;
-  padding: 0; }
+  padding: 0;
+  overflow-x: hidden; }
 
 h1 {
   font-family: Helvetica, Arial, sans-serif;
@@ -204,6 +205,13 @@ input {
   .btnOption:nth-child(1) {
     margin-right: 10px; }
 
+#btnMenu {
+  position: absolute;
+  top: 10px;
+  right: 20px;
+  padding: 0.5rem;
+  font-size: 2rem; }
+
 #main-nav {
   display: flex;
   justify-content: center;
@@ -247,5 +255,37 @@ input {
     height: 105%;
     background: transparent;
     border-radius: 50px; }
+
+.menu {
+  position: absolute;
+  top: 0;
+  left: 100vw;
+  display: block;
+  transition: left 500ms ease-out; }
+  .menu #menuBg {
+    position: relative;
+    top: 0;
+    left: 0;
+    background: rgba(0, 0, 0, 0);
+    width: 100vw;
+    height: 100vh;
+    transition: background 500ms ease-out; }
+  .menu .menu-btns {
+    position: absolute;
+    top: 0;
+    right: 0;
+    display: flex;
+    flex-direction: column;
+    background: white;
+    padding: 2em;
+    height: fit-content;
+    -webkit-border-radius: 12px;
+    -moz-border-radius: 12px;
+    border-radius: 12px;
+    -webkit-box-shadow: -6px -6px 0 0 grey;
+    -moz-box-shadow: -6px -6px 0 0 grey;
+    box-shadow: -6px -6px 0 0 grey;
+    border: 2px solid grey;
+    margin: 1rem; }
 
 /*# sourceMappingURL=app.css.map */
