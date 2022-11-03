@@ -1,6 +1,7 @@
 const express = require("express");
 // const { sample } = require("underscore");
 const {MongoClient, ObjectId} = require("mongodb");
+const localFile = require("./env");
 
 const app = express();
 
@@ -55,7 +56,7 @@ async function main(){
     // const newHighScore = {name:data.name, score:data.score};
     // const id = data.id;
 
-    const password = process.env.DB_PWD || "yQnn0dQGTdd4Sy2766";
+    const password = process.env.DB_PWD || localFile.key;
     const uri = `mongodb+srv://robot-army:${password}@cluster0.cxoh44a.mongodb.net/?retryWrites=true&w=majority`;
     //const client = new MongoClient(uri);
 
