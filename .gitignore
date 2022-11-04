@@ -4,6 +4,7 @@ sass/
 
 # Dev notes
 notes.txt
+server/env.js
 
 # Logs
 logs
