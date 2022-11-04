@@ -39,6 +39,7 @@ let blockClicked = (event) => {
     }
 
 }
+const body = document.querySelector('body');
 
 homeScreen();
 
@@ -54,6 +55,8 @@ function homeScreen(){
     const btnOptions = document.getElementById("btnOptions");
     btnOptions.addEventListener('click', showOptions);
     // btnNewGame.click()
+
+    inGameMenu.innerHTML = ``;
 }
 
 let darkMode = false;  // move to localStorage
@@ -141,6 +144,29 @@ function startGame(){
     blocksArr = Array.from(blocks);                   // or  arr = [...nodeList]
     //console.log(blocks)
     addBlockEventListeners();
+
+
+    // in-game menu
+
+    scoreboard.innerHTML += `<button id="btnMenu">o</button>`;
+    btnMenu.addEventListener('click', toggleMenu);
+
+    const menu = `
+        <div id="menuBg"></div>
+        <div id="menuBtnsArea" class="menu-btns">
+            <button id="btnContinue" class="btn-type-a">Continue</button>
+            <button id="btnReturnHome" class="btn-type-a">Exit</button>
+        </div>
+    `;
+    inGameMenu.innerHTML += menu;
+
+    menuBg.addEventListener('click', toggleMenu);
+    btnContinue.addEventListener('click', toggleMenu);
+    btnReturnHome.addEventListener('click', ()=>{
+        flagToggleMenu = true;
+        toggleMenu();
+        homeScreen();
+    });
 }
 
 function addBlockEventListeners(){
@@ -538,7 +564,7 @@ function getHighScorePlayerName(){
     addEventListenerBtnReturnHome(btnCancelHighScore);
 }
 
-// async function checkCurrentScore(currentScore, sortedScores){
+/* async function checkCurrentScore(currentScore, sortedScores){
     // if(currentScore > sortedScores[sortedScores.length-1].score){
     //     // send ID of lowest score to database, to be removed
     //     let deleteScoreId = sortedScores[sortedScores.length-1]._id
@@ -569,5 +595,30 @@ function getHighScorePlayerName(){
     // }else{
     //     // do nothing
     // }
-// }
+ }*/
 
+// in game menu
+
+// btnMenu.addEventListener('click', toggleMenu);      // to go in startgame function
+// btnContinue.addEventListener('click', toggleMenu);  // to go in startgame function
+let flagToggleMenu = false;
+
+function toggleMenu(){
+    menuBg.style.transition = "background 500ms ease-out";
+    if(!flagToggleMenu){
+        // show menu
+        menuBg.addEventListener('click', toggleMenu);
+        setTimeout(()=>{menuBg.style.background = "rgba(0,0,0,0.6)";}, 500);
+        inGameMenu.style.left = "0";
+
+        flagToggleMenu = true;
+    }else{
+        // hide menu
+        menuBg.removeEventListener('click', toggleMenu);
+        menuBg.style.background = "rgba(0,0,0,0)";
+        menuBg.style.transition = "";
+        inGameMenu.style.left = "100vw";
+
+        flagToggleMenu = false;
+    }
+}
