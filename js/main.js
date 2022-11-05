@@ -146,27 +146,7 @@ function startGame(){
     addBlockEventListeners();
 
 
-    // in-game menu
-
-    scoreboard.innerHTML += `<button id="btnMenu">o</button>`;
-    btnMenu.addEventListener('click', toggleMenu);
-
-    const menu = `
-        <div id="menuBg"></div>
-        <div id="menuBtnsArea" class="menu-btns">
-            <button id="btnContinue" class="btn-type-a">Continue</button>
-            <button id="btnReturnHome" class="btn-type-a">Exit</button>
-        </div>
-    `;
-    inGameMenu.innerHTML += menu;
-
-    menuBg.addEventListener('click', toggleMenu);
-    btnContinue.addEventListener('click', toggleMenu);
-    btnReturnHome.addEventListener('click', ()=>{
-        flagToggleMenu = true;
-        toggleMenu();
-        homeScreen();
-    });
+    addInGameMenu();
 }
 
 function addBlockEventListeners(){
@@ -603,6 +583,30 @@ function getHighScorePlayerName(){
 // btnContinue.addEventListener('click', toggleMenu);  // to go in startgame function
 let flagToggleMenu = false;
 
+function addInGameMenu(){
+    // in-game menu
+
+    scoreboard.innerHTML += `<button id="btnMenu">o</button>`;
+    btnMenu.addEventListener('click', toggleMenu);
+
+    const menu = `
+        <div id="menuBg"></div>
+        <div id="menuBtnsArea" class="menu-btns">
+            <button id="btnContinue" class="btn-type-a">Continue</button>
+            <button id="btnReturnHome" class="btn-type-a">Exit</button>
+        </div>
+    `;
+    inGameMenu.innerHTML += menu;
+
+    menuBg.addEventListener('click', toggleMenu);
+    btnContinue.addEventListener('click', toggleMenu);
+    btnReturnHome.addEventListener('click', ()=>{
+        flagToggleMenu = true;
+        toggleMenu();
+        homeScreen();
+    });
+}
+
 function toggleMenu(){
     menuBg.style.transition = "background 500ms ease-out";
     if(!flagToggleMenu){
@@ -621,4 +625,51 @@ function toggleMenu(){
 
         flagToggleMenu = false;
     }
+}
+
+// SAVE GAME (BASIC)
+
+let saveGame = {
+    date : '',
+    game: '',
+    score: '',
+    tries: 0,
+    //blocks: 0,
+};
+
+function loadGame(){
+    // load prev save-game
+    if( saveGame.tries === 0 ) {
+        // start new game
+
+    } else {
+        // load game
+        mainContent.style.flexDirection = "row";    
+        mainContent.innerHTML = saveGame.game;
+        scoreboard.innerHTML = `
+            <h1>Score: <span id="scoreCount"></span></h1>
+            <h1>Try: <span id="tryCount"></span></h1>
+        `;
+
+        scoreValue = saveGame.score;
+        tryValue = saveGame.tries;
+        
+        scoreCount.innerText = scoreValue;
+        tryCount.innerText = tryValue;
+
+        blocks = document.querySelectorAll(".block");
+        //blocksArr = Array.from(blocks);                   // or  arr = [...nodeList]
+        //console.log(blocks)
+        addBlockEventListeners();
+
+        addInGameMenu();
+    }
+}
+
+function saveGame(){
+    // save current game and values
+    saveGame.date = "10/11/23";
+    saveGame.game = mainContent.innerHTML;
+    saveGame.score = scoreCount.innerText;
+    saveGame.tries = tryCount.innerText;
 }
