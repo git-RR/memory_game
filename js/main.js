@@ -4,6 +4,7 @@
 
 const homeScreenHTML = `
     <button id="btnNewGame" class="btn-type-a">New Game</button>
+    <button id="btnLoad" class="btn-type-a">Load</button>
     <button id="btnHighScore" class="btn-type-a">High Score</button>
     <button id="btnOptions" class="btn-type-a">Options</button>
 `;
@@ -11,7 +12,7 @@ const homeScreenHTML = `
 
 // to change based on screen size
 let col = 4;
-let row = 1;
+let row = 3;
 
 const all_blocks = [1,2,3,4,5,6,7,8,9,10];      // all possible blocks
 let remainingBlocks = [];                       // blocks to be placed
@@ -54,6 +55,9 @@ function homeScreen(){
     btnHighScore.addEventListener('click', showHighScore);
     const btnOptions = document.getElementById("btnOptions");
     btnOptions.addEventListener('click', showOptions);
+    const btnLoad = document.getElementById("btnLoad");
+    btnLoad.addEventListener('click', loadGame);
+
     // btnNewGame.click()
 
     inGameMenu.innerHTML = ``;
@@ -144,7 +148,6 @@ function startGame(){
     blocksArr = Array.from(blocks);                   // or  arr = [...nodeList]
     //console.log(blocks)
     addBlockEventListeners();
-
 
     addInGameMenu();
 }
@@ -593,6 +596,7 @@ function addInGameMenu(){
         <div id="menuBg"></div>
         <div id="menuBtnsArea" class="menu-btns">
             <button id="btnContinue" class="btn-type-a">Continue</button>
+            <button id="btnSave" class="btn-type-a">Save</button>
             <button id="btnReturnHome" class="btn-type-a">Exit</button>
         </div>
     `;
@@ -605,6 +609,7 @@ function addInGameMenu(){
         toggleMenu();
         homeScreen();
     });
+    btnSave.addEventListener('click', saveGame);
 }
 
 function toggleMenu(){
@@ -629,47 +634,59 @@ function toggleMenu(){
 
 // SAVE GAME (BASIC)
 
-let saveGame = {
+let saveGameData = {
     date : '',
     game: '',
-    score: '',
+    score: 0,
     tries: 0,
-    //blocks: 0,
+    blockMap: [],
 };
 
 function loadGame(){
     // load prev save-game
-    if( saveGame.tries === 0 ) {
+    if( saveGameData.tries === 0 ) {
         // start new game
-
+        alert('no game data to load');
     } else {
         // load game
         mainContent.style.flexDirection = "row";    
-        mainContent.innerHTML = saveGame.game;
+        mainContent.innerHTML = saveGameData.game;
         scoreboard.innerHTML = `
             <h1>Score: <span id="scoreCount"></span></h1>
             <h1>Try: <span id="tryCount"></span></h1>
         `;
 
-        scoreValue = saveGame.score;
-        tryValue = saveGame.tries;
+        scoreValue = saveGameData.score;
+        tryValue = saveGameData.tries;
         
         scoreCount.innerText = scoreValue;
         tryCount.innerText = tryValue;
 
         blocks = document.querySelectorAll(".block");
-        //blocksArr = Array.from(blocks);                   // or  arr = [...nodeList]
+        blocksArr = Array.from(blocks);                   // or  arr = [...nodeList]
+        blockMap = saveGameData.blockMap;
+        blockMap = [];
+        saveGameData.blockMap.forEach(block=>{blockMap.push(block);});
         //console.log(blocks)
         addBlockEventListeners();
 
         addInGameMenu();
+
+        alert('game data loaded');
+        console.log(blockMap);
+        console.log(saveGameData.blockMap);
     }
 }
 
 function saveGame(){
     // save current game and values
-    saveGame.date = "10/11/23";
-    saveGame.game = mainContent.innerHTML;
-    saveGame.score = scoreCount.innerText;
-    saveGame.tries = tryCount.innerText;
+    saveGameData.date       = "10/11/23";
+    saveGameData.game       = mainContent.innerHTML;
+    saveGameData.score      = parseInt(scoreCount.innerText);
+    saveGameData.tries      = parseInt(tryCount.innerText);
+    console.log(blockMap);
+    console.log(saveGameData.blockMap);
+    blockMap.forEach(block=>{saveGameData.blockMap.push(block);});
+
+    alert('game data to saved');
 }
