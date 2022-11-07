@@ -96,8 +96,49 @@ async function getHighScores(client){
     return result;
 }
 
+/* SAVE GAME */
+
+app.get('/api/save-game', async (request, response)=>{
+    // TODO
+    // get username from request
+    // check if username in database
+    // yes: send save game data back; no: send not found message
+});
+
+app.post("/api/save-game", async (request, response)=>{
+    const data = request.body;
+    //const newSaveGame = {};
+    //const client = await main();
+
+    // TODO 
+    // check whether user has saved game before; 
+    // yes: update; no: create new save game
+
+    /* start test code */
+
+    console.log('New Save Game:');
+    console.log(data);
+
+    test_save_game.push(data);
+    
+    //response.json({data: 'game saved!'});
+    /* end test code */
+});
 
 /* test code */
+
+let test_save_game = [
+    /*
+        format: {
+            playername: '',
+            date : '',
+            game: '',
+            score: 0,
+            tries: 0,
+            blockMap: [],
+        },
+    */
+];
 
 // main();
 
