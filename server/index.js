@@ -120,7 +120,8 @@ app.post("/api/save-game", async (request, response)=>{
     console.log(data);
 
     test_save_game.push(data);
-    
+    console.log('dummy DB: ')
+    console.log(test_save_game)
     //response.json({data: 'game saved!'});
     /* end test code */
 });

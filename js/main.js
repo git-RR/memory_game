@@ -678,15 +678,33 @@ function loadGame(){
     }
 }
 
-function saveGame(){
+async function saveGame(){
     // save current game and values
     saveGameData.date       = "10/11/23";
     saveGameData.game       = mainContent.innerHTML;
     saveGameData.score      = parseInt(scoreCount.innerText);
     saveGameData.tries      = parseInt(tryCount.innerText);
-    console.log(blockMap);
-    console.log(saveGameData.blockMap);
+    // console.log(blockMap);
+    // console.log(saveGameData.blockMap);
+    saveGameData.blockMap = [];
     blockMap.forEach(block=>{saveGameData.blockMap.push(block);});
+    // for (let i = 0; i < blockMap.length; i++) {
+    //     blockMap[i] = saveGameData.blockMap[i];
+    // }
 
     alert('game data to saved');
+
+    // send game data to server
+
+    const options = {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', },
+        body: JSON.stringify(saveGameData),
+    };
+
+    const response = await fetch('/api/save-game', options);
+    const json = await response.json();
+
+    console.log(json.data);
+
 }
