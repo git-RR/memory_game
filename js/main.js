@@ -635,6 +635,7 @@ function toggleMenu(){
 // SAVE GAME (BASIC)
 
 let saveGameData = {
+    playerName: 'unknown',
     date : '',
     game: '',
     score: 0,
@@ -644,6 +645,19 @@ let saveGameData = {
 
 function loadGame(){
     // load prev save-game
+
+    let url = "/api/save-game/?";
+    // let data = {name: 'sakura'};
+    // url.searchParams.append("name",data('name'));
+    // url = encodeURI(url.slice(0, -1));
+    // url += "name"+"="+data.name+"&pwd=12345";
+    url += "playerName"+"="+saveGameData.playerName+"&pwd=12345";
+    url = encodeURI(url);
+
+    fetch(url)
+    .then(res => {return res.text();})
+    .then(txt => {alert(txt);})
+/*
     if( saveGameData.tries === 0 ) {
         // start new game
         alert('no game data to load');
@@ -675,7 +689,7 @@ function loadGame(){
         alert('game data loaded');
         console.log(blockMap);
         console.log(saveGameData.blockMap);
-    }
+    }*/
 }
 
 async function saveGame(){
@@ -692,7 +706,7 @@ async function saveGame(){
     //     blockMap[i] = saveGameData.blockMap[i];
     // }
 
-    alert('game data to saved');
+    alert('game data saved');
 
     // send game data to server
 

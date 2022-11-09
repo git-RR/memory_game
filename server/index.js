@@ -103,6 +103,21 @@ app.get('/api/save-game', async (request, response)=>{
     // get username from request
     // check if username in database
     // yes: send save game data back; no: send not found message
+
+    // console.log(request.url);
+    // console.log(request.query);
+    
+    let player_name_query = request.query.playerName;
+
+    for(i in test_save_game){
+        // console.log(test_save_game[i])
+        if(test_save_game[i].playerName === player_name_query){
+            response.send("found : "+test_save_game[i].playerName);
+            return;
+        }
+    }
+    response.send("did not find : "+player_name_query);
+
 });
 
 app.post("/api/save-game", async (request, response)=>{
@@ -117,11 +132,11 @@ app.post("/api/save-game", async (request, response)=>{
     /* start test code */
 
     console.log('New Save Game:');
-    console.log(data);
+    console.log(data.playerName);
 
     test_save_game.push(data);
-    console.log('dummy DB: ')
-    console.log(test_save_game)
+    // console.log('dummy DB: ')
+    // console.log(test_save_game)
     //response.json({data: 'game saved!'});
     /* end test code */
 });
