@@ -235,7 +235,9 @@ async function endGame(){
         setTimeout(()=>{
             if( scoreValue > parseInt(sortedScores[sortedScores.length-1].score) ){
                 deleteScoreId = sortedScores[sortedScores.length-1]._id  // global variable
-                getHighScorePlayerName();
+                getPlayerName();
+                btnSubmitPlayerName.addEventListener('click', submitHighScore);
+                addEventListenerBtnReturnHome(btnCancelSubmitPlayerName);
             }else{
                 showHighScore(); // show high scores at end of game
             }
@@ -521,7 +523,7 @@ async function submitHighScore(){
     
     // basic input validation - to be expanded later
     if( player_name.length>0 && player_name.length<=16 ){
-        btnSubmitHighScore.removeEventListener('click', submitHighScore);
+        btnSubmitPlayerName.removeEventListener('click', submitHighScore);
         // const scores = await getHighScore();
         // checkCurrentScore(scoreValue, scores); // moved to endgame()
         
@@ -534,17 +536,17 @@ async function submitHighScore(){
 
 }
 
-function getHighScorePlayerName(){
+function getPlayerName(){
     //get player name
     mainContent.style.display = "flex";
     mainContent.style.flexDirection = "column";
     mainContent.innerHTML = `
         <input id="playerName" type="text" class="inputField">
-        <button id="btnSubmitHighScore" class="btn-type-a">Submit</button>
-        <button id="btnCancelHighScore" class="btn-type-a">Cancel</button>
+        <button id="btnSubmitPlayerName" class="btn-type-a">Submit</button>
+        <button id="btnCancelSubmitPlayerName" class="btn-type-a">Cancel</button>
     `;
-    btnSubmitHighScore.addEventListener('click', submitHighScore);
-    addEventListenerBtnReturnHome(btnCancelHighScore);
+    // btnSubmitPlayerName.addEventListener('click', submitHighScore);
+    // addEventListenerBtnReturnHome(btnCancelSubmitPlayerName);
 }
 
 /* async function checkCurrentScore(currentScore, sortedScores){
@@ -609,7 +611,17 @@ function addInGameMenu(){
         toggleMenu();
         homeScreen();
     });
-    btnSave.addEventListener('click', saveGame);
+    // btnSave.addEventListener('click', saveGame);
+    btnSave.addEventListener('click', ()=>{
+        getPlayerName();
+        prepareSaveGame();
+        btnSubmitPlayerName.addEventListener('click', () => {
+            saveGameData.playerName = playerName.value;
+            saveGame();
+        });
+        addEventListenerBtnReturnHome(btnCancelSubmitPlayerName);
+        btnCancelSubmitPlayerName.addEventListener('click', returnToGame());
+    });
 }
 
 function toggleMenu(){
@@ -635,7 +647,7 @@ function toggleMenu(){
 // SAVE GAME (BASIC)
 
 let saveGameData = {
-    playerName: 'unknown',
+    playerName: '',
     date : '',
     game: '',
     score: 0,
@@ -692,7 +704,44 @@ function loadGame(){
     }*/
 }
 
-async function saveGame(){
+function returnToGame() {
+    
+    if( saveGameData.tries === 0 ) {
+        // start new game
+        startGame();
+        // alert('no game data to load');
+    } else {
+        // load game
+        mainContent.style.flexDirection = "row";    
+        mainContent.innerHTML = saveGameData.game;
+        scoreboard.innerHTML = `
+            <h1>Score: <span id="scoreCount"></span></h1>
+            <h1>Try: <span id="tryCount"></span></h1>
+        `;
+
+        scoreValue = saveGameData.score;
+        tryValue = saveGameData.tries;
+        
+        scoreCount.innerText = scoreValue;
+        tryCount.innerText = tryValue;
+
+        blocks = document.querySelectorAll(".block");
+        blocksArr = Array.from(blocks);                   // or  arr = [...nodeList]
+        blockMap = saveGameData.blockMap;
+        blockMap = [];
+        saveGameData.blockMap.forEach(block=>{blockMap.push(block);});
+        //console.log(blocks)
+        addBlockEventListeners();
+
+        addInGameMenu();
+
+        // alert('game data loaded');
+        // console.log(blockMap);
+        // console.log(saveGameData.blockMap);
+    }
+}
+
+function prepareSaveGame() {
     // save current game and values
     saveGameData.date       = "10/11/23";
     saveGameData.game       = mainContent.innerHTML;
@@ -705,6 +754,9 @@ async function saveGame(){
     // for (let i = 0; i < blockMap.length; i++) {
     //     blockMap[i] = saveGameData.blockMap[i];
     // }
+}
+
+async function saveGame() {
 
     alert('game data saved');
 
