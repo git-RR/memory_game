@@ -437,7 +437,7 @@ async function showHighScore(){
                 <h1>Cannot connect to database.</h1>
                 <button id="btnReturnHome" class="btn-type-a">Return</button>
             `;
-            console.log(error)
+            console.log(error);
         } finally {
             addEventListenerBtnReturnHome(btnReturnHome);
         }
@@ -602,7 +602,7 @@ function addInGameMenu(){
             <button id="btnReturnHome" class="btn-type-a">Exit</button>
         </div>
     `;
-    inGameMenu.innerHTML += menu;
+    inGameMenu.innerHTML = menu;
 
     menuBg.addEventListener('click', toggleMenu);
     btnContinue.addEventListener('click', toggleMenu);
@@ -613,14 +613,16 @@ function addInGameMenu(){
     });
     // btnSave.addEventListener('click', saveGame);
     btnSave.addEventListener('click', ()=>{
-        getPlayerName();
         prepareSaveGame();
+        getPlayerName();
         btnSubmitPlayerName.addEventListener('click', () => {
             saveGameData.playerName = playerName.value;
             saveGame();
+            returnToGame();
+            toggleMenu(); // show
         });
-        addEventListenerBtnReturnHome(btnCancelSubmitPlayerName);
-        btnCancelSubmitPlayerName.addEventListener('click', returnToGame());
+        // addEventListenerBtnReturnHome(btnCancelSubmitPlayerName);
+        btnCancelSubmitPlayerName.addEventListener('click', returnToGame);
     });
 }
 
@@ -663,12 +665,39 @@ function loadGame(){
     // url.searchParams.append("name",data('name'));
     // url = encodeURI(url.slice(0, -1));
     // url += "name"+"="+data.name+"&pwd=12345";
-    url += "playerName"+"="+saveGameData.playerName+"&pwd=12345";
-    url = encodeURI(url);
 
-    fetch(url)
-    .then(res => {return res.text();})
-    .then(txt => {alert(txt);})
+    getPlayerName();
+    btnSubmitPlayerName.addEventListener('click', async () => {
+        saveGameData.playerName = playerName.value;
+
+        url += "playerName"+"="+saveGameData.playerName+"&pwd=12345";
+        url = encodeURI(url);
+
+        // fetch(url)
+        // .then(res => {return res.text();})
+        // .then(txt => {alert(txt);})
+        
+        const response = await fetch(url);
+        const loadedGameData = await response.json();
+        if( loadedGameData.data === 404 ) {
+            console.log(loadedGameData.message);
+        } else{
+            // console.log(loadedGameData.playerName, loadedGameData.blockMap);
+            saveGameData.date       = loadedGameData.date;
+            saveGameData.game       = loadedGameData.game;
+            saveGameData.score      = loadedGameData.score;
+            saveGameData.tries      = loadedGameData.tries;
+            saveGameData.blockMap   = [];
+            loadedGameData.blockMap.forEach(block=>{saveGameData.blockMap.push(block);});
+
+            returnToGame();
+        }
+        
+        // put response into local object and call returnToGame
+    });
+    addEventListenerBtnReturnHome(btnCancelSubmitPlayerName);
+
+    
 /*
     if( saveGameData.tries === 0 ) {
         // start new game
@@ -706,11 +735,11 @@ function loadGame(){
 
 function returnToGame() {
     
-    if( saveGameData.tries === 0 ) {
+    //if( saveGameData.tries === 0 ) {
         // start new game
-        startGame();
+        // startGame();
         // alert('no game data to load');
-    } else {
+    //} else {
         // load game
         mainContent.style.flexDirection = "row";    
         mainContent.innerHTML = saveGameData.game;
@@ -738,7 +767,7 @@ function returnToGame() {
         // alert('game data loaded');
         // console.log(blockMap);
         // console.log(saveGameData.blockMap);
-    }
+    //}
 }
 
 function prepareSaveGame() {
@@ -754,6 +783,7 @@ function prepareSaveGame() {
     // for (let i = 0; i < blockMap.length; i++) {
     //     blockMap[i] = saveGameData.blockMap[i];
     // }
+    toggleMenu(); // hide in-game menu
 }
 
 async function saveGame() {

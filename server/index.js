@@ -112,11 +112,12 @@ app.get('/api/save-game', async (request, response)=>{
     for(i in test_save_game){
         // console.log(test_save_game[i])
         if(test_save_game[i].playerName === player_name_query){
-            response.send("found : "+test_save_game[i].playerName);
+            // response.send("found : "+test_save_game[i].playerName);
+            response.json(test_save_game[i]);
             return;
         }
     }
-    response.send("did not find : "+player_name_query);
+    response.json({data: 404, message: `did not find : ${player_name_query}`});
 
 });
 
@@ -146,7 +147,7 @@ app.post("/api/save-game", async (request, response)=>{
 let test_save_game = [
     /*
         format: {
-            playername: '',
+            playerName: '',
             date : '',
             game: '',
             score: 0,
