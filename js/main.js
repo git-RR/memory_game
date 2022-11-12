@@ -538,13 +538,22 @@ async function submitHighScore(){
 
 function getPlayerName(){
     //get player name
-    mainContent.style.display = "flex";
-    mainContent.style.flexDirection = "column";
+    // mainContent.style.display = "flex";
+    // mainContent.style.flexDirection = "column";
     mainContent.innerHTML = `
-        <input id="playerName" type="text" class="inputField">
-        <button id="btnSubmitPlayerName" class="btn-type-a">Submit</button>
+    <form id="formPlayerData" onsubmit="event.preventDefault();">
+        <input id="playerName" type="text" class="inputField" placeholder="Player Name" required>
+        <input id="passphrase" type="text" class="inputField" placeholder="Passphrase" required>
+        <label for="newPlayerCheckbox">
+            <input id="newPlayerCheckbox" type="checkbox" name="newPlayerCheckbox" value="newPlayer">
+            I'm a new player
+        </label>
+        <button id="btnSubmitPlayerName" class="btn-type-a" type="submit">Submit</button>
         <button id="btnCancelSubmitPlayerName" class="btn-type-a">Cancel</button>
+    </form>
     `;
+    formPlayerData.style.display = "flex";
+    formPlayerData.style.flexDirection = "column";
     // btnSubmitPlayerName.addEventListener('click', submitHighScore);
     // addEventListenerBtnReturnHome(btnCancelSubmitPlayerName);
 }
@@ -615,12 +624,13 @@ function addInGameMenu(){
     btnSave.addEventListener('click', ()=>{
         prepareSaveGame();
         getPlayerName();
-        btnSubmitPlayerName.addEventListener('click', () => {
-            saveGameData.playerName = playerName.value;
-            saveGame();
-            returnToGame();
-            toggleMenu(); // show
-        });
+        btnSubmitPlayerName.addEventListener('click', saveGame);
+        //() => {
+            // saveGameData.playerName = playerName.value;
+            // saveGame();
+            // returnToGame();
+            // toggleMenu(); // show
+        //});
         // addEventListenerBtnReturnHome(btnCancelSubmitPlayerName);
         btnCancelSubmitPlayerName.addEventListener('click', returnToGame);
     });
@@ -650,6 +660,7 @@ function toggleMenu(){
 
 let saveGameData = {
     playerName: '',
+    passphrase: '',
     date : '',
     game: '',
     score: 0,
@@ -660,7 +671,7 @@ let saveGameData = {
 function loadGame(){
     // load prev save-game
 
-    let url = "/api/save-game/?";
+    // let url = "/api/save-game/?";
     // let data = {name: 'sakura'};
     // url.searchParams.append("name",data('name'));
     // url = encodeURI(url.slice(0, -1));
@@ -670,15 +681,17 @@ function loadGame(){
     btnSubmitPlayerName.addEventListener('click', async () => {
         saveGameData.playerName = playerName.value;
 
-        url += "playerName"+"="+saveGameData.playerName+"&pwd=12345";
+        let url = "/api/save-game/?";
+        url += "playerName"+"="+saveGameData.playerName+"&loadGame=true";
         url = encodeURI(url);
+        const response = await fetch(url);
+        const loadedGameData = await response.json();
 
         // fetch(url)
         // .then(res => {return res.text();})
         // .then(txt => {alert(txt);})
         
-        const response = await fetch(url);
-        const loadedGameData = await response.json();
+        
         if( loadedGameData.data === 404 ) {
             console.log(loadedGameData.message);
         } else{
@@ -787,20 +800,73 @@ function prepareSaveGame() {
 }
 
 async function saveGame() {
+    let numberOfInvalidInputs = formPlayerData.querySelectorAll(":invalid").length;
+    if(numberOfInvalidInputs) return;
 
-    alert('game data saved');
+    saveGameData.playerName = playerName.value;
+    saveGameData.passphrase = passphrase.value;
+    let newPlayerFlag = newPlayerCheckbox.checked;
+    let foundPlayerNameFlag = false;
 
-    // send game data to server
+    // check whether playername is taken
 
-    const options = {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', },
-        body: JSON.stringify(saveGameData),
-    };
+    let url = "/api/save-game/?";
+    url += "playerName"+"="+saveGameData.playerName+"&loadGame=false";
+    url = encodeURI(url);
+    const resData = await fetch(url);
+    const usernameCheck = await resData.json();
 
-    const response = await fetch('/api/save-game', options);
-    const json = await response.json();
+    if( usernameCheck.status === "found" ) {
+        foundPlayerNameFlag = true;
+    }
 
-    console.log(json.data);
 
+    if( newPlayerFlag ) {                                       // use 'POST' to create new
+
+        console.log('trying to create new save game...');
+
+        if( foundPlayerNameFlag ) {                             // do not proceed; username exists; alert user
+            alert('that username is taken.');
+            console.log('create failed.');
+            return; 
+        }
+
+        // create new save game
+        console.log('POSTING!!')
+        const options = {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', },
+            body: JSON.stringify(saveGameData),
+        };
+
+        const response = await fetch('/api/save-game/', options);
+        const json = await response.json();
+
+        console.log('create successful.')
+        console.log(json.data);
+
+    } else {                                                    // use 'PUT' to update
+        
+        if( !foundPlayerNameFlag ) {                             // do not proceed; username does not exist; alert user
+            alert('that username is not found.');
+            console.log('overwrite failed.')
+            return;
+        }
+        console.log('cannot yet update save games!!!');
+        // update existing save game
+
+        // const options = {
+        //     method: 'PUT',
+        //     headers: { 'Content-Type': 'application/json', },
+        //     body: JSON.stringify(saveGameData),
+        // };
+
+        // const response = await fetch('/api/save-game', options);
+        // const json = await response.json();
+
+    }
+
+    returnToGame();
+    toggleMenu(); // show
+    // alert('game data saved');
 }

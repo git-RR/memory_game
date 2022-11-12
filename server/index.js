@@ -107,17 +107,35 @@ app.get('/api/save-game', async (request, response)=>{
     // console.log(request.url);
     // console.log(request.query);
     
-    let player_name_query = request.query.playerName;
+    const player_name_query = request.query.playerName;
+    const load_game_query = request.query.loadGame;
+    let found_player_name = false;
+    let i = -1;
 
     for(i in test_save_game){
         // console.log(test_save_game[i])
         if(test_save_game[i].playerName === player_name_query){
             // response.send("found : "+test_save_game[i].playerName);
-            response.json(test_save_game[i]);
-            return;
+            //response.json(test_save_game[i]);
+            //return;
+            found_player_name = true;
+            break;
         }
     }
-    response.json({data: 404, message: `did not find : ${player_name_query}`});
+
+    if( found_player_name ) {
+        if( load_game_query ) {                 // load game
+            response.json(test_save_game[i]);
+        } else {                                // check to create new user    
+            response.json({status:'found'});
+        }
+    } else {
+        if( load_game_query ) {                 // load game
+            response.json({data: 404, message: `did not find : ${player_name_query}`});
+        } else {                                // check to create new user    
+            response.json({status:'not found'});
+        }
+    }
 
 });
 
@@ -148,6 +166,7 @@ let test_save_game = [
     /*
         format: {
             playerName: '',
+            passphrase: '',
             date : '',
             game: '',
             score: 0,
