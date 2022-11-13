@@ -554,6 +554,7 @@ function getPlayerName(){
     `;
     formPlayerData.style.display = "flex";
     formPlayerData.style.flexDirection = "column";
+    formPlayerData.style.alignItems = "center";
     // btnSubmitPlayerName.addEventListener('click', submitHighScore);
     // addEventListenerBtnReturnHome(btnCancelSubmitPlayerName);
 }
@@ -682,7 +683,7 @@ function loadGame(){
         saveGameData.playerName = playerName.value;
 
         let url = "/api/save-game/?";
-        url += "playerName"+"="+saveGameData.playerName+"&loadGame=true";
+        url += "playerName"+"="+saveGameData.playerName+"&loadGame=1";
         url = encodeURI(url);
         const response = await fetch(url);
         const loadedGameData = await response.json();
@@ -811,12 +812,15 @@ async function saveGame() {
     // check whether playername is taken
 
     let url = "/api/save-game/?";
-    url += "playerName"+"="+saveGameData.playerName+"&loadGame=false";
+    url += "playerName"+"="+saveGameData.playerName+"&loadGame=0";
     url = encodeURI(url);
     const resData = await fetch(url);
     const usernameCheck = await resData.json();
-
-    if( usernameCheck.status === "found" ) {
+    console.log('Check for username returned: ');
+    console.log(usernameCheck);
+    if( usernameCheck.status === "available" ) {
+        foundPlayerNameFlag = false;
+    } else {
         foundPlayerNameFlag = true;
     }
 
@@ -852,17 +856,17 @@ async function saveGame() {
             console.log('overwrite failed.')
             return;
         }
-        console.log('cannot yet update save games!!!');
+        // console.log('cannot yet update save games!!!');
         // update existing save game
 
-        // const options = {
-        //     method: 'PUT',
-        //     headers: { 'Content-Type': 'application/json', },
-        //     body: JSON.stringify(saveGameData),
-        // };
+        const options = {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', },
+            body: JSON.stringify(saveGameData),
+        };
 
-        // const response = await fetch('/api/save-game', options);
-        // const json = await response.json();
+        const response = await fetch('/api/save-game', options);
+        const json = await response.json();
 
     }
 

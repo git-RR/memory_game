@@ -108,7 +108,7 @@ app.get('/api/save-game', async (request, response)=>{
     // console.log(request.query);
     
     const player_name_query = request.query.playerName;
-    const load_game_query = request.query.loadGame;
+    const load_game_query = parseInt(request.query.loadGame);
     let found_player_name = false;
     let i = -1;
 
@@ -126,14 +126,18 @@ app.get('/api/save-game', async (request, response)=>{
     if( found_player_name ) {
         if( load_game_query ) {                 // load game
             response.json(test_save_game[i]);
+            console.log('LOAD-SUCCESSFUL : data sent back');
         } else {                                // check to create new user    
-            response.json({status:'found'});
+            response.json({status:'unavailable'});
+            console.log('CREATE FAILED : username already exists');
         }
     } else {
         if( load_game_query ) {                 // load game
             response.json({data: 404, message: `did not find : ${player_name_query}`});
+            console.log(`LOAD-FAILED : did not find : ${player_name_query}`);
         } else {                                // check to create new user    
-            response.json({status:'not found'});
+            response.json({status:'available'});
+            console.log('CREATE SUCCESSFUL : username is available');
         }
     }
 
@@ -156,7 +160,45 @@ app.post("/api/save-game", async (request, response)=>{
     test_save_game.push(data);
     // console.log('dummy DB: ')
     // console.log(test_save_game)
-    //response.json({data: 'game saved!'});
+    response.json({data: 'game saved!'});
+    /* end test code */
+});
+
+app.put("/api/save-game", async (request, response)=>{
+    const data = request.body;
+
+    /* start test code */
+
+    console.log('Updating Save Game:');
+    console.log(data.playerName);
+
+    test_save_game.foreach(entry=>{
+        if( test_save_game === data.playerName ) {
+            console.log('old data');
+            console.log(entry);
+
+            entry.playerName = data.playerName
+            entry.passphrase = data.passphrase
+            entry.date = data.date
+            entry.game = data.game
+            entry.score1 = data.score1
+            entry.tries1 = data.tries1
+            data.blockMap.foreach(block=>{entry.blockMap.push(block)});
+
+            console.log('new data');
+            console.log(entry);
+
+            return;
+        }
+    });
+
+    
+
+
+    // test_save_game.push(data);
+    // console.log('dummy DB: ')
+    // console.log(test_save_game)
+    response.json({data: 'game saved!'});
     /* end test code */
 });
 
@@ -174,6 +216,33 @@ let test_save_game = [
             blockMap: [],
         },
     */
+        {
+            playerName: 'Player1',
+            passphrase: '123',
+            date : '',
+            game: '<h2>game data for player <b>ONE</b></h2>',
+            score: 1,
+            tries: 1,
+            blockMap: [],
+        },
+        {
+            playerName: 'Player2',
+            passphrase: '123',
+            date : '',
+            game: '<h2>game data for player <b>TWO</b></h2>',
+            score: 2,
+            tries: 2,
+            blockMap: [],
+        },
+        {
+            playerName: 'Player3',
+            passphrase: '123',
+            date : '',
+            game: '<h2>game data for player <b>THREE</b></h2>',
+            score: 3,
+            tries: 3,
+            blockMap: [],
+        },
 ];
 
 // main();
