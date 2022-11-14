@@ -785,6 +785,14 @@ function returnToGame() {
 }
 
 function prepareSaveGame() {
+
+    document.querySelectorAll('.block').forEach(block=>{
+        if(!block.classList.contains("found")){
+            console.log('block selected will be reset before save');
+            block.children[0].style.opacity = '0';
+        }
+    });
+
     // save current game and values
     saveGameData.date       = "10/11/23";
     saveGameData.game       = mainContent.innerHTML;
@@ -867,7 +875,7 @@ async function saveGame() {
 
         const response = await fetch('/api/save-game', options);
         const json = await response.json();
-
+        alert(json.data);
     }
 
     returnToGame();

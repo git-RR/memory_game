@@ -171,36 +171,55 @@ app.put("/api/save-game", async (request, response)=>{
 
     console.log('Updating Save Game:');
     console.log(data.playerName);
+    // console.log('TYPE : ');
+    // console.log(typeof(test_save_game));
+    // console.log('DATA : ');
+    // console.log(test_save_game);
+    
+    test_save_game.forEach((entry)=>{
+        if( entry.playerName === data.playerName ) {
 
-    test_save_game.foreach(entry=>{
-        if( test_save_game === data.playerName ) {
             console.log('old data');
-            console.log(entry);
+            console.log(entry.playerName);
+            console.log(entry.blockMap);
 
             entry.playerName = data.playerName
             entry.passphrase = data.passphrase
             entry.date = data.date
             entry.game = data.game
-            entry.score1 = data.score1
-            entry.tries1 = data.tries1
-            data.blockMap.foreach(block=>{entry.blockMap.push(block)});
+            entry.score = data.score
+            entry.tries = data.tries
+            entry.blockMap = [];
+            data.blockMap.forEach( block=>{ entry.blockMap.push(block) } );
 
             console.log('new data');
-            console.log(entry);
+            console.log(entry.playerName);
+            console.log(entry.blockMap);
 
-            return;
+            // return;
+            response.json({data: 'save game updated.'});
+        } else {
+            // debugging
+            console.log(`${entry.playerName} is not ${data.playerName}`);
         }
     });
 
-    
+    // console.log('NEW DATA : ');
+    // console.log(test_save_game);
 
 
     // test_save_game.push(data);
     // console.log('dummy DB: ')
     // console.log(test_save_game)
-    response.json({data: 'game saved!'});
+    // response.json({data: 'end of PUT'});
     /* end test code */
 });
+
+function removeDuplicateUser(){
+    // TODO:
+    // check for duplicate and remove
+    // sometimes duplicates show up in db during save game
+}
 
 /* test code */
 
