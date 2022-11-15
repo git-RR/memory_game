@@ -540,13 +540,14 @@ function getPlayerName(){
     //get player name
     // mainContent.style.display = "flex";
     // mainContent.style.flexDirection = "column";
+
     mainContent.innerHTML = `
     <form id="formPlayerData" onsubmit="event.preventDefault();">
         <input id="playerName" type="text" class="inputField" placeholder="Player Name" required>
         <input id="passphrase" type="text" class="inputField" placeholder="Passphrase" required>
         <label for="newPlayerCheckbox">
             <input id="newPlayerCheckbox" type="checkbox" name="newPlayerCheckbox" value="newPlayer">
-            I'm a new player
+            <span>I'm a new player</span>
         </label>
         <button id="btnSubmitPlayerName" class="btn-type-a" type="submit">Submit</button>
         <button id="btnCancelSubmitPlayerName" class="btn-type-a">Cancel</button>
@@ -625,6 +626,7 @@ function addInGameMenu(){
     btnSave.addEventListener('click', ()=>{
         prepareSaveGame();
         getPlayerName();
+        btnMenu.setAttribute('hidden',true)
         btnSubmitPlayerName.addEventListener('click', saveGame);
         //() => {
             // saveGameData.playerName = playerName.value;
@@ -679,6 +681,10 @@ function loadGame(){
     // url += "name"+"="+data.name+"&pwd=12345";
 
     getPlayerName();
+    // newPlayerCheckbox.parentNode.setAttribute('hidden', true); // display: flex overrides attribute
+
+    newPlayerCheckbox.parentNode.style.display = "none";
+
     btnSubmitPlayerName.addEventListener('click', async () => {
         saveGameData.playerName = playerName.value;
 
