@@ -109,12 +109,25 @@ app.get('/api/save-game', async (request, response)=>{
     
     const player_name_query = request.query.playerName;
     const load_game_query = parseInt(request.query.loadGame);
+    const identifier_query = request.query.identifier;
+
     let found_player_name = false;
     let i = -1;
 
-    for(i in test_save_game){
+    let auth_success = false;
+
+    test_user_db.forEach( ( user ) => {
+        if( user.playerName === player_name_query ){
+            if( user.passphrase === identifier_query ){
+                auth_success = true;
+                return;
+            }
+        }
+    });
+
+    for( i in test_save_game ){
         // console.log(test_save_game[i])
-        if(test_save_game[i].playerName === player_name_query){
+        if( test_save_game[i].playerName === player_name_query ){
             // response.send("found : "+test_save_game[i].playerName);
             //response.json(test_save_game[i]);
             //return;
@@ -124,23 +137,28 @@ app.get('/api/save-game', async (request, response)=>{
     }
 
     if( found_player_name ) {
-        if( load_game_query ) {                 // load game
+        if( load_game_query && auth_success ) {                 // load game
             response.json(test_save_game[i]);
             console.log('LOAD-SUCCESSFUL : data sent back');
+            return;
         } else {                                // check to create new user    
-            response.json({status:'unavailable'});
-            console.log('CREATE FAILED : username already exists');
+            response.json({data: 403, status:'unavailable'});
+            console.log('check result : username already exists');
+            return;
         }
     } else {
-        if( load_game_query ) {                 // load game
+        if( load_game_query && auth_success ) {                 // load game
             response.json({data: 404, message: `did not find : ${player_name_query}`});
             console.log(`LOAD-FAILED : did not find : ${player_name_query}`);
+            return;
         } else {                                // check to create new user    
-            response.json({status:'available'});
-            console.log('CREATE SUCCESSFUL : username is available');
+            response.json({data: 403, status:'available'});
+            console.log('check result : username is available');
+            return;
         }
     }
 
+   //response.json({data:403 ,message:'login failed. check details and try again.'});
 });
 
 app.post("/api/save-game", async (request, response)=>{
@@ -158,6 +176,13 @@ app.post("/api/save-game", async (request, response)=>{
     console.log(data.playerName);
 
     test_save_game.push(data);
+
+    //add new user
+    test_user_db.push({
+        playerName: data.playerName,
+        passphrase: data.passphrase,
+    })
+
     // console.log('dummy DB: ')
     // console.log(test_save_game)
     response.json({data: 'game saved!'});
@@ -223,6 +248,21 @@ function removeDuplicateUser(){
 
 /* test code */
 
+let test_user_db = [
+    {
+        playerName: 'Player1',
+        passphrase: '123',
+    },
+    {
+        playerName: 'Player2',
+        passphrase: 'abc',
+    },
+    {
+        playerName: 'Player3',
+        passphrase: '!@#',
+    },
+]
+
 let test_save_game = [
     /*
         format: {
@@ -237,7 +277,7 @@ let test_save_game = [
     */
         {
             playerName: 'Player1',
-            passphrase: '123',
+            // passphrase: '123',
             date : '',
             game: '<h2>game data for player <b>ONE</b></h2>',
             score: 1,
@@ -246,7 +286,7 @@ let test_save_game = [
         },
         {
             playerName: 'Player2',
-            passphrase: '123',
+            // passphrase: '123',
             date : '',
             game: '<h2>game data for player <b>TWO</b></h2>',
             score: 2,
@@ -255,7 +295,7 @@ let test_save_game = [
         },
         {
             playerName: 'Player3',
-            passphrase: '123',
+            // passphrase: '123',
             date : '',
             game: '<h2>game data for player <b>THREE</b></h2>',
             score: 3,

@@ -137,6 +137,8 @@ function startGame(){
     //const tryCount = document.getElementById("tryCount");
     scoreValue = 0;
     tryValue = 0;
+
+    selectedBlocks = [];                                // reset selection
     
     scoreCount.innerText = scoreValue;
     tryCount.innerText = tryValue;
@@ -549,7 +551,7 @@ function getPlayerName(){
             <input id="newPlayerCheckbox" type="checkbox" name="newPlayerCheckbox" value="newPlayer">
             <span>I'm a new player</span>
         </label>
-        <button id="btnSubmitPlayerName" class="btn-type-a" type="submit">Submit</button>
+        <button id="btnSubmitPlayerName" class="btn-type-a">Submit</button>
         <button id="btnCancelSubmitPlayerName" class="btn-type-a">Cancel</button>
     </form>
     `;
@@ -626,7 +628,8 @@ function addInGameMenu(){
     btnSave.addEventListener('click', ()=>{
         prepareSaveGame();
         getPlayerName();
-        btnMenu.setAttribute('hidden',true)
+
+        btnMenu.setAttribute('hidden', true);
         btnSubmitPlayerName.addEventListener('click', saveGame);
         //() => {
             // saveGameData.playerName = playerName.value;
@@ -663,13 +666,18 @@ function toggleMenu(){
 
 let saveGameData = {
     playerName: '',
-    passphrase: '',
+    // passphrase: '',
     date : '',
     game: '',
     score: 0,
     tries: 0,
     blockMap: [],
 };
+
+let userDetails = {
+    playerName: '',
+    passphrase: '',
+}
 
 function loadGame(){
     // load prev save-game
@@ -687,17 +695,29 @@ function loadGame(){
 
     btnSubmitPlayerName.addEventListener('click', async () => {
         saveGameData.playerName = playerName.value;
+        userDetails.playerName = playerName.value;
+        userDetails.passphrase = passphrase.value;
 
         let url = "/api/save-game/?";
-        url += "playerName"+"="+saveGameData.playerName+"&loadGame=1";
+        url += "playerName="+saveGameData.playerName+"&loadGame=1"+"&identifier="+userDetails.passphrase;
         url = encodeURI(url);
         const response = await fetch(url);
         const loadedGameData = await response.json();
 
+        console.log('LOADED DATA:')
+        console.log(loadedGameData)
+        console.log('------------------------------')
+        console.log('selected blocks')
+        console.log(selectedBlocks);
+
         // fetch(url)
         // .then(res => {return res.text();})
         // .then(txt => {alert(txt);})
-        
+        if( loadedGameData.data === 403 ) { // incorrect input cred's
+            // alert(loadedGameData.message);
+            alert('load failed. check details and try again.');
+            return;
+        }
         
         if( loadedGameData.data === 404 ) {
             console.log(loadedGameData.message);
@@ -799,6 +819,8 @@ function prepareSaveGame() {
         }
     });
 
+    selectedBlocks = []; // reset array
+
     // save current game and values
     saveGameData.date       = "10/11/23";
     saveGameData.game       = mainContent.innerHTML;
@@ -848,6 +870,10 @@ async function saveGame() {
             console.log('create failed.');
             return; 
         }
+
+        console.log('SAVED DATA:')
+        console.log(saveGameData)
+        console.log('------------------------------')
 
         // create new save game
         console.log('POSTING!!')
