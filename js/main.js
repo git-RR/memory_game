@@ -3,6 +3,7 @@
 //const scoreboard = document.getElementById("scoreboard");
 
 const homeScreenHTML = `
+    <button id="btnContinue" class="btn-type-a" hidden>Continue</button>
     <button id="btnNewGame" class="btn-type-a">New Game</button>
     <button id="btnLoad" class="btn-type-a">Load</button>
     <button id="btnHighScore" class="btn-type-a">High Score</button>
@@ -57,10 +58,18 @@ function homeScreen(){
     btnOptions.addEventListener('click', showOptions);
     const btnLoad = document.getElementById("btnLoad");
     btnLoad.addEventListener('click', loadGame);
+    const btnContinue = document.getElementById("btnContinue");
+    btnContinue.addEventListener('click', continueGame);
 
     // btnNewGame.click()
 
     inGameMenu.innerHTML = ``;
+
+    if( localStorage.getItem("localSaveGameData") ) {
+        btnContinue.removeAttribute("hidden");
+    } else {
+        // btnContinue.setAttribute("hidden", true);
+    }
 }
 
 let darkMode = false;  // move to localStorage
@@ -171,6 +180,11 @@ function removeBlockEventListeners(){
 function checkIfBlocksMatch(){
     tryValue++;
     tryCount.innerText = tryValue;
+
+    // autosave game feature
+    // prepareSaveGame();
+    // saveGameLocal();
+    // end autosave game feature
 
     const block1 = blocks[selectedBlocks[0]];
     const block2 = blocks[selectedBlocks[1]];
@@ -688,6 +702,8 @@ function loadGame(){
     // url = encodeURI(url.slice(0, -1));
     // url += "name"+"="+data.name+"&pwd=12345";
 
+    // only proceed when navigator.online === true
+
     getPlayerName();
     // newPlayerCheckbox.parentNode.setAttribute('hidden', true); // display: flex overrides attribute
 
@@ -814,7 +830,7 @@ function prepareSaveGame() {
 
     document.querySelectorAll('.block').forEach(block=>{
         if(!block.classList.contains("found")){
-            console.log('block selected will be reset before save');
+            // console.log('block selected will be reset before save');
             block.children[0].style.opacity = '0';
         }
     });
@@ -841,7 +857,12 @@ async function saveGame() {
     if(numberOfInvalidInputs) return;
 
     saveGameData.playerName = playerName.value;
-    saveGameData.passphrase = passphrase.value;
+    saveGameData.passphrase = passphrase.value;     // redundant; saveGameData does not have 'passphrase' prop
+
+    saveGameLocal();
+
+    // only proceed from here down when (navigator.onLine === true)
+
     let newPlayerFlag = newPlayerCheckbox.checked;
     let foundPlayerNameFlag = false;
 
@@ -871,9 +892,9 @@ async function saveGame() {
             return; 
         }
 
-        console.log('SAVED DATA:')
-        console.log(saveGameData)
-        console.log('------------------------------')
+        // console.log('SAVED DATA:')
+        // console.log(saveGameData)
+        // console.log('------------------------------')
 
         // create new save game
         console.log('POSTING!!')
@@ -912,5 +933,18 @@ async function saveGame() {
 
     returnToGame();
     toggleMenu(); // show
-    // alert('game data saved');
+    alert('game data saved');
+
+}
+
+function saveGameLocal() {
+    // prepareSaveGame() must be called before saveGameLocal()
+    localStorage.setItem("localSaveGameData", JSON.stringify(saveGameData));
+    console.log('game saved @ '+(new Date()).toString().substring(16,24));
+}
+
+function continueGame() {
+    console.log('getting data from local storage.');
+    saveGameData = JSON.parse( localStorage.getItem("localSaveGameData") );
+    returnToGame();
 }

@@ -208,8 +208,8 @@ app.put("/api/save-game", async (request, response)=>{
             console.log(entry.playerName);
             console.log(entry.blockMap);
 
-            entry.playerName = data.playerName
-            entry.passphrase = data.passphrase
+            entry.playerName = data.playerName      // this is not updated; redundant
+            entry.passphrase = data.passphrase      // this is not updated; redundant
             entry.date = data.date
             entry.game = data.game
             entry.score = data.score
@@ -221,11 +221,12 @@ app.put("/api/save-game", async (request, response)=>{
             console.log(entry.playerName);
             console.log(entry.blockMap);
 
-            // return;
             response.json({data: 'save game updated.'});
+            // return; // better to include return after response
         } else {
             // debugging
             console.log(`${entry.playerName} is not ${data.playerName}`);
+            // return; // better to include return after response
         }
     });
 
