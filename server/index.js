@@ -7,8 +7,10 @@ const app = express();
 
 const port = process.env.PORT || 5001;
 
-const DATABASE_NAME             = "new_game";
-const COLLECTION_NAME           = "high-scores"; 
+const DATABASE                  = "new_game";
+const COLLECTION_HIGHSCORE      = "high-scores";
+const COLLECTION_SAVE_DATA      = "save_game_data"; 
+const COLLECTION_USER_CREDS     = "user_creds"; 
 const high_score_list_limit     = 10;
 
 app.listen(port, ()=>{console.log(`listening @ port ${port}`)});
@@ -51,14 +53,16 @@ app.post("/api", async (request, response)=>{
     response.json({data: 'high score list updated!'});
     /* end test code */
 });
-//main()
+
+main()
+
 async function main(){
     // const newHighScore = {name:data.name, score:data.score};
     // const id = data.id;
 
     const password = process.env.DB_PWD || localFile.key;
     const uri = `mongodb+srv://robot-army:${password}@cluster0.cxoh44a.mongodb.net/?retryWrites=true&w=majority`;
-    //const client = new MongoClient(uri);
+    const client = new MongoClient(uri);
 
     try {
         await client.connect();
@@ -67,7 +71,12 @@ async function main(){
         
         // await resetHighScoreCollection(client);
         // getHighScores(client)
-        // const result = await client.db(DATABASE_NAME).collection(COLLECTION_NAME).deleteOne({_id:ObjectId('635befc24379eb3424036f8a')});
+        // const result = await client.db(DATABASE).collection(COLLECTION_HIGHSCORE).deleteOne({_id:ObjectId('635befc24379eb3424036f8a')});
+        
+        // const userCred = await getUserCred( client, 'player1' );
+        // console.log('FROM TEST : ');
+        // console.log(userCred);
+
 
         return client;
 
@@ -80,17 +89,17 @@ async function main(){
 }
 
 async function addNewHighScore(client, newHighScore){
-	const result = await client.db(DATABASE_NAME).collection(COLLECTION_NAME).insertOne(newHighScore);
+	const result = await client.db(DATABASE).collection(COLLECTION_HIGHSCORE).insertOne(newHighScore);
 	console.log(`New high score added with id: ${result.insertedId}`);
 }
 
 async function deleteOldHighScore(client, id){
-    const result = await client.db(DATABASE_NAME).collection(COLLECTION_NAME).deleteOne({_id:ObjectId(id)});
+    const result = await client.db(DATABASE).collection(COLLECTION_HIGHSCORE).deleteOne({_id:ObjectId(id)});
     console.log(`${result.deleteCount} document(s) was/were deleted.`)
 }
 
 async function getHighScores(client){
-	const cursor = await client.db(DATABASE_NAME).collection(COLLECTION_NAME).find({}).sort({score: -1}).limit(high_score_list_limit);
+	const cursor = await client.db(DATABASE).collection(COLLECTION_HIGHSCORE).find({}).sort({score: -1}).limit(high_score_list_limit);
     const result = await cursor.toArray();
     console.log(result);
     return result;
@@ -99,6 +108,59 @@ async function getHighScores(client){
 /* SAVE GAME */
 
 app.get('/api/save-game', async (request, response)=>{
+ 
+    
+    const player_name_query = request.query.playerName;
+    const load_game_query = parseInt(request.query.loadGame);
+    const identifier_query = request.query.identifier;  // passphrase
+
+    // cloud db
+    const client = await main();
+    const userCred = getUserCred( client, player_name_query );
+
+    if( userCred.length === 0 ) {
+        // did not find user in user db
+
+        if( load_game_query ) {
+            // load game
+            response.json({data: 404, message: `did not find : ${player_name_query}`});
+            console.log(`LOAD-FAILED : did not find : ${player_name_query}`);
+            return;
+        } else {
+            // create new user    
+            response.json({data: 403, status:'available'});
+            console.log('check result : username is available');
+            return;
+        }
+
+    } else {
+        // user found
+
+        if( !load_game_query ){
+            // create new user
+            response.json({data: 403, status:'unavailable'});
+            console.log('check result : username already exists');
+            return;
+        } else {
+            // load game 
+
+            if( userCred[0].passphrase === identifier_query ){
+                // auth successful
+                const game_data = getSaveGameData(client, player_name_query);
+                response.json(game_data);
+            } else {
+                // auth failed
+                response.json({data: 404, message: `user '${player_name_query}' authentication failed!`});
+                console.log(`AUTH-FAILED : did not match : ${player_name_query} passphrase`);
+                return;
+            }
+
+        }
+
+    }
+
+    /* test code */
+
     // TODO
     // get username from request
     // check if username in database
@@ -106,59 +168,55 @@ app.get('/api/save-game', async (request, response)=>{
 
     // console.log(request.url);
     // console.log(request.query);
-    
-    const player_name_query = request.query.playerName;
-    const load_game_query = parseInt(request.query.loadGame);
-    const identifier_query = request.query.identifier;
 
-    let found_player_name = false;
-    let i = -1;
+    // let found_player_name = false;
+    // let i = -1;
+    // let auth_success = false;
 
-    let auth_success = false;
+    // test_user_db.forEach( ( user ) => {
+    //     if( user.playerName === player_name_query ){
+    //         if( user.passphrase === identifier_query ){
+    //             auth_success = true;
+    //             return;
+    //         }
+    //     }
+    // });
 
-    test_user_db.forEach( ( user ) => {
-        if( user.playerName === player_name_query ){
-            if( user.passphrase === identifier_query ){
-                auth_success = true;
-                return;
-            }
-        }
-    });
+    // for( i in test_save_game ){
+    //     // console.log(test_save_game[i])
+    //     if( test_save_game[i].playerName === player_name_query ){
+    //         // response.send("found : "+test_save_game[i].playerName);
+    //         //response.json(test_save_game[i]);
+    //         //return;
+    //         found_player_name = true;
+    //         break;
+    //     }
+    // }
 
-    for( i in test_save_game ){
-        // console.log(test_save_game[i])
-        if( test_save_game[i].playerName === player_name_query ){
-            // response.send("found : "+test_save_game[i].playerName);
-            //response.json(test_save_game[i]);
-            //return;
-            found_player_name = true;
-            break;
-        }
-    }
-
-    if( found_player_name ) {
-        if( load_game_query && auth_success ) {                 // load game
-            response.json(test_save_game[i]);
-            console.log('LOAD-SUCCESSFUL : data sent back');
-            return;
-        } else {                                // check to create new user    
-            response.json({data: 403, status:'unavailable'});
-            console.log('check result : username already exists');
-            return;
-        }
-    } else {
-        if( load_game_query && auth_success ) {                 // load game
-            response.json({data: 404, message: `did not find : ${player_name_query}`});
-            console.log(`LOAD-FAILED : did not find : ${player_name_query}`);
-            return;
-        } else {                                // check to create new user    
-            response.json({data: 403, status:'available'});
-            console.log('check result : username is available');
-            return;
-        }
-    }
+    // if( found_player_name ) {
+    //     if( load_game_query && auth_success ) {                 // load game
+    //         // response.json(test_save_game[i]);
+    //         // console.log('LOAD-SUCCESSFUL : data sent back');
+    //         // return;
+    //     } else {                                // check to create new user    
+    //         response.json({data: 403, status:'unavailable'});
+    //         console.log('check result : username already exists');
+    //         return;
+    //     }
+    // } else {
+    //     if( load_game_query && auth_success ) {                 // load game
+    //         response.json({data: 404, message: `did not find : ${player_name_query}`});
+    //         console.log(`LOAD-FAILED : did not find : ${player_name_query}`);
+    //         return;
+    //     } else {                                // check to create new user    
+    //         response.json({data: 403, status:'available'});
+    //         console.log('check result : username is available');
+    //         return;
+    //     }
+    // }
 
    //response.json({data:403 ,message:'login failed. check details and try again.'});
+   /* end test code */
 });
 
 app.post("/api/save-game", async (request, response)=>{
@@ -241,9 +299,56 @@ app.put("/api/save-game", async (request, response)=>{
     /* end test code */
 });
 
+// save game database
+async function addNewSaveGameData(client, newSaveGameData){
+    // NEW SAVE GAME
+	const result = await client.db(DATABASE).collection(COLLECTION_SAVE_DATA).insertOne(newSaveGameData);
+	console.log(`New save game added with id: ${result.insertedId}`);
+}
+
+async function updateSaveGameData(client, user, new_data){
+    // SAVE GAME
+    // user = { playerName : 'player1' }
+    // new_data = { playerName : 'player1', ... }
+
+    const result = await client.db(DATABASE).collection(COLLECTION_SAVE_DATA).updateOne(user, new_data);
+    console.log('1 document updated...');
+    console.log(result);
+}
+
+async function getSaveGameData(client, player_name){
+    // LOAD GAME
+	const cursor = await client.db(DATABASE).collection(COLLECTION_SAVE_DATA).findOne({playerName: player_name});
+    const result = await cursor.json();
+    console.log('loaded game : ');
+    console.log(result);
+    return result;
+}
+
+// user cred's database
+
+async function addNewUser(client, newUserCreds){
+    // NEW USER
+	const result = await client.db(DATABASE).collection(COLLECTION_USER_CREDS).insertOne(newUserCreds);
+	console.log(`New user added with id: ${result.insertedId}`);
+}
+
+
+async function getUserCred(client, player_name){
+    // GET USER
+	const cursor = await client.db(DATABASE).collection(COLLECTION_USER_CREDS).find({playerName: player_name}).limit(1);
+    const result = await cursor.toArray();
+    console.log('user found : ');
+    console.log(result);
+    return result;
+}
+
+
+// end SAVE GAME
+
 function removeDuplicateUser(){
     // TODO:
-    // check for duplicate and remove
+    // check for duplicate and remove from test db
     // sometimes duplicates show up in db during save game
 }
 
@@ -312,9 +417,9 @@ async function resetHighScoreCollection(client){
     for (let i=1; i<=high_score_list_limit; i++) {
         defaultScores.push({name:'player unknown',score:0});
     }
-    const result_delete = await client.db(DATABASE_NAME).collection(COLLECTION_NAME).deleteMany({}); // clear database
+    const result_delete = await client.db(DATABASE).collection(COLLECTION_HIGHSCORE).deleteMany({}); // clear database
     console.log(`${result_delete.deletedCount} documents deleted.`);
-    const result = await client.db(DATABASE_NAME).collection(COLLECTION_NAME).insertMany(defaultScores);
+    const result = await client.db(DATABASE).collection(COLLECTION_HIGHSCORE).insertMany(defaultScores);
     console.log(`High Score List Length : ${result.insertedCount}`);
     //console.log(`ID's : ${result.insertedIds}`);
 }
