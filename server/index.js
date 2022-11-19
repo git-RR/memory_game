@@ -54,7 +54,7 @@ app.post("/api", async (request, response)=>{
     /* end test code */
 });
 
-main()
+// main()
 
 async function main(){
     // const newHighScore = {name:data.name, score:data.score};
@@ -109,16 +109,15 @@ async function getHighScores(client){
 
 app.get('/api/save-game', async (request, response)=>{
  
-    
     const player_name_query = request.query.playerName;
     const load_game_query = parseInt(request.query.loadGame);
     const identifier_query = request.query.identifier;  // passphrase
 
     // cloud db
     const client = await main();
-    const userCred = getUserCred( client, player_name_query );
+    const userCred = await getUserCred( client, player_name_query );
 
-    if( userCred.length === 0 ) {
+    if( userCred === null ) {
         // did not find user in user db
 
         if( load_game_query ) {
@@ -144,9 +143,9 @@ app.get('/api/save-game', async (request, response)=>{
         } else {
             // load game 
 
-            if( userCred[0].passphrase === identifier_query ){
+            if( userCred.passphrase === identifier_query ){
                 // auth successful
-                const game_data = getSaveGameData(client, player_name_query);
+                const game_data = await getSaveGameData(client, player_name_query);
                 response.json(game_data);
             } else {
                 // auth failed
@@ -318,8 +317,7 @@ async function updateSaveGameData(client, user, new_data){
 
 async function getSaveGameData(client, player_name){
     // LOAD GAME
-	const cursor = await client.db(DATABASE).collection(COLLECTION_SAVE_DATA).findOne({playerName: player_name});
-    const result = await cursor.json();
+	const result = await client.db(DATABASE).collection(COLLECTION_SAVE_DATA).findOne({playerName: player_name});
     console.log('loaded game : ');
     console.log(result);
     return result;
@@ -336,8 +334,7 @@ async function addNewUser(client, newUserCreds){
 
 async function getUserCred(client, player_name){
     // GET USER
-	const cursor = await client.db(DATABASE).collection(COLLECTION_USER_CREDS).find({playerName: player_name}).limit(1);
-    const result = await cursor.toArray();
+	const result = await client.db(DATABASE).collection(COLLECTION_USER_CREDS).findOne({playerName: player_name});
     console.log('user found : ');
     console.log(result);
     return result;
@@ -373,7 +370,6 @@ let test_save_game = [
     /*
         format: {
             playerName: '',
-            passphrase: '',
             date : '',
             game: '',
             score: 0,

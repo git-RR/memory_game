@@ -710,6 +710,10 @@ function loadGame(){
     newPlayerCheckbox.parentNode.style.display = "none";
 
     btnSubmitPlayerName.addEventListener('click', async () => {
+
+        let numberOfInvalidInputs = formPlayerData.querySelectorAll(":invalid").length;
+        if(numberOfInvalidInputs) return;
+
         saveGameData.playerName = playerName.value;
         userDetails.playerName = playerName.value;
         userDetails.passphrase = passphrase.value;
@@ -723,8 +727,8 @@ function loadGame(){
         console.log('LOADED DATA:')
         console.log(loadedGameData)
         console.log('------------------------------')
-        console.log('selected blocks')
-        console.log(selectedBlocks);
+        // console.log('selected blocks')
+        // console.log(selectedBlocks);
 
         // fetch(url)
         // .then(res => {return res.text();})
@@ -744,7 +748,9 @@ function loadGame(){
             saveGameData.score      = loadedGameData.score;
             saveGameData.tries      = loadedGameData.tries;
             saveGameData.blockMap   = [];
-            loadedGameData.blockMap.forEach(block=>{saveGameData.blockMap.push(block);});
+            if( loadedGameData.blockMap ){                                          // condition only for test
+                loadedGameData.blockMap.forEach(block=>{saveGameData.blockMap.push(block);});
+            }
 
             returnToGame();
         }
