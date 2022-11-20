@@ -220,8 +220,26 @@ app.get('/api/save-game', async (request, response)=>{
 
 app.post("/api/save-game", async (request, response)=>{
     const data = request.body;
-    //const newSaveGame = {};
-    //const client = await main();
+
+    const newSaveGame = {
+        playerName: data.playerName,
+        date : data.date,
+        game: data.game,
+        score: data.score,
+        tries: data.tries,
+        blockMap: data.blockMap,
+    };
+
+    const newUserCred = {
+        playerName: data.playerName,
+        passphrase: data.passphrase,
+    };
+
+    // cloud db
+    const client = await main();
+
+    await addNewSaveGameData(client, newSaveGame); // is await necessary?
+    await addNewUser(client, newUserCred); // is await necessary?
 
     // TODO 
     // check whether user has saved game before; 
@@ -229,16 +247,16 @@ app.post("/api/save-game", async (request, response)=>{
 
     /* start test code */
 
-    console.log('New Save Game:');
-    console.log(data.playerName);
+    // console.log('New Save Game:');
+    // console.log(data.playerName);
 
-    test_save_game.push(data);
+    // test_save_game.push(data);
 
-    //add new user
-    test_user_db.push({
-        playerName: data.playerName,
-        passphrase: data.passphrase,
-    })
+    // //add new user
+    // test_user_db.push({
+    //     playerName: data.playerName,
+    //     passphrase: data.passphrase,
+    // })
 
     // console.log('dummy DB: ')
     // console.log(test_save_game)
@@ -249,43 +267,55 @@ app.post("/api/save-game", async (request, response)=>{
 app.put("/api/save-game", async (request, response)=>{
     const data = request.body;
 
+    const client = await main();
+
+   const updatedSaveData = {
+        date : data.date,
+        game : data.game,
+        score : data.score,
+        tries : data.tries,
+        blockMap : data.blockMap,
+   }
+
+    await updateSaveGameData(client, data.playerName, updatedSaveData); // is await necessary?
+    response.json({data: 'save game updated.'});
     /* start test code */
 
-    console.log('Updating Save Game:');
-    console.log(data.playerName);
+    // console.log('Updating Save Game:');
+    // console.log(data.playerName);
     // console.log('TYPE : ');
     // console.log(typeof(test_save_game));
     // console.log('DATA : ');
     // console.log(test_save_game);
     
-    test_save_game.forEach((entry)=>{
-        if( entry.playerName === data.playerName ) {
+    // test_save_game.forEach((entry)=>{
+    //     if( entry.playerName === data.playerName ) {
 
-            console.log('old data');
-            console.log(entry.playerName);
-            console.log(entry.blockMap);
+    //         console.log('old data');
+    //         console.log(entry.playerName);
+    //         console.log(entry.blockMap);
 
-            entry.playerName = data.playerName      // this is not updated; redundant
-            entry.passphrase = data.passphrase      // this is not updated; redundant
-            entry.date = data.date
-            entry.game = data.game
-            entry.score = data.score
-            entry.tries = data.tries
-            entry.blockMap = [];
-            data.blockMap.forEach( block=>{ entry.blockMap.push(block) } );
+    //         entry.playerName = data.playerName      // this is not updated; redundant
+    //         entry.passphrase = data.passphrase      // this is not updated; redundant
+    //         entry.date = data.date
+    //         entry.game = data.game
+    //         entry.score = data.score
+    //         entry.tries = data.tries
+    //         entry.blockMap = [];
+    //         data.blockMap.forEach( block=>{ entry.blockMap.push(block) } );
 
-            console.log('new data');
-            console.log(entry.playerName);
-            console.log(entry.blockMap);
+    //         console.log('new data');
+    //         console.log(entry.playerName);
+    //         console.log(entry.blockMap);
 
-            response.json({data: 'save game updated.'});
-            // return; // better to include return after response
-        } else {
-            // debugging
-            console.log(`${entry.playerName} is not ${data.playerName}`);
-            // return; // better to include return after response
-        }
-    });
+    //         response.json({data: 'save game updated.'});
+    //         // return; // better to include return after response
+    //     } else {
+    //         // debugging
+    //         console.log(`${entry.playerName} is not ${data.playerName}`);
+    //         // return; // better to include return after response
+    //     }
+    // });
 
     // console.log('NEW DATA : ');
     // console.log(test_save_game);

@@ -863,7 +863,7 @@ async function saveGame() {
     if(numberOfInvalidInputs) return;
 
     saveGameData.playerName = playerName.value;
-    saveGameData.passphrase = passphrase.value;     // redundant; saveGameData does not have 'passphrase' prop
+    saveGameData.passphrase = passphrase.value;     // passphrase not stored in 'save-game-data' db; in user creds db
 
     saveGameLocal();
 
