@@ -270,14 +270,16 @@ app.put("/api/save-game", async (request, response)=>{
     const client = await main();
 
    const updatedSaveData = {
-        date : data.date,
-        game : data.game,
-        score : data.score,
-        tries : data.tries,
-        blockMap : data.blockMap,
+        $set:{
+            date : data.date,
+            game : data.game,
+            score : data.score,
+            tries : data.tries,
+            blockMap : data.blockMap,
+        }
    }
 
-    await updateSaveGameData(client, data.playerName, updatedSaveData); // is await necessary?
+    await updateSaveGameData(client, { playerName : data.playerName }, updatedSaveData); // is await necessary?
     response.json({data: 'save game updated.'});
     /* start test code */
 
@@ -379,6 +381,36 @@ function removeDuplicateUser(){
     // sometimes duplicates show up in db during save game
 }
 
+// dev functions
+
+async function resetHighScoreCollection(client){
+    let defaultScores = [];
+    for (let i=1; i<=high_score_list_limit; i++) {
+        defaultScores.push({name:'player unknown',score:0});
+    }
+    const result_delete = await client.db(DATABASE).collection(COLLECTION_HIGHSCORE).deleteMany({}); // clear database
+    console.log(`${result_delete.deletedCount} documents deleted.`);
+    const result = await client.db(DATABASE).collection(COLLECTION_HIGHSCORE).insertMany(defaultScores);
+    console.log(`High Score List Length : ${result.insertedCount}`);
+    //console.log(`ID's : ${result.insertedIds}`);
+}
+
+async function clearAllSaveGameData(){
+    // clear
+    const result_delete1 = await client.db(DATABASE).collection(COLLECTION_SAVE_DATA).deleteMany({});
+    const result_delete2 = await client.db(DATABASE).collection(COLLECTION_USER_CREDS).deleteMany({});
+}
+
+async function getAllSaveGameData(){
+   // Check databases
+   const result1 = await client.db(DATABASE).collection(COLLECTION_SAVE_DATA).find({});
+   const result2 = await client.db(DATABASE).collection(COLLECTION_USER_CREDS).find({});
+   const db1 = await result1.toArray();
+   const db2 = await result2.toArray();
+   console.log("STATE OF DB's");
+   console.log(db1, db2);
+}
+
 /* test code */
 
 let test_user_db = [
@@ -436,20 +468,6 @@ let test_save_game = [
         },
 ];
 
-// main();
-
-async function resetHighScoreCollection(client){
-    let defaultScores = [];
-    for (let i=1; i<=high_score_list_limit; i++) {
-        defaultScores.push({name:'player unknown',score:0});
-    }
-    const result_delete = await client.db(DATABASE).collection(COLLECTION_HIGHSCORE).deleteMany({}); // clear database
-    console.log(`${result_delete.deletedCount} documents deleted.`);
-    const result = await client.db(DATABASE).collection(COLLECTION_HIGHSCORE).insertMany(defaultScores);
-    console.log(`High Score List Length : ${result.insertedCount}`);
-    //console.log(`ID's : ${result.insertedIds}`);
-}
-
 let sample_data = [
     {
         name:   "wolf_1",
@@ -478,4 +496,4 @@ let sample_data = [
     },
 ]
 
-// high-to-low: 4 1 2 5 3
+/* end test code */

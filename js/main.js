@@ -98,7 +98,7 @@ function showOptions(){
         <button id="btnReturnHome" class="btn-type-a">Return</button>
     `;
     mainContent.innerHTML = optionsPage;
-    
+    const btnReturnHome = document.getElementById('btnReturnHome');
     addEventListenerBtnReturnHome(btnReturnHome);
 
     btnOptionModeDark.addEventListener('click', changeMode);
@@ -252,6 +252,7 @@ async function endGame(){
             if( scoreValue > parseInt(sortedScores[sortedScores.length-1].score) ){
                 deleteScoreId = sortedScores[sortedScores.length-1]._id  // global variable
                 getPlayerName();
+                newPlayerCheckbox.parentNode.style.display = "none";
                 btnSubmitPlayerName.addEventListener('click', submitHighScore);
                 addEventListenerBtnReturnHome(btnCancelSubmitPlayerName);
             }else{
@@ -410,6 +411,7 @@ async function showHighScore(){
             <h1>Loading...</h1>
             <button id="btnReturnHome" class="btn-type-a">Return</button>
         `;
+        btnReturnHome = document.getElementById("btnReturnHome");
         addEventListenerBtnReturnHome(btnReturnHome);
 
         try {
@@ -455,6 +457,7 @@ async function showHighScore(){
             `;
             console.log(error);
         } finally {
+            btnReturnHome = document.getElementById("btnReturnHome");
             addEventListenerBtnReturnHome(btnReturnHome);
         }
 
@@ -465,15 +468,14 @@ async function showHighScore(){
             <h1>You're not connected.</h1>
             <button id="btnReturnHome" class="btn-type-a">Return</button>
         `;
+        btnReturnHome = document.getElementById("btnReturnHome");
         addEventListenerBtnReturnHome(btnReturnHome);
     } 
     
 }
 
 function addEventListenerBtnReturnHome(btnId){
-    btnId.addEventListener('click', ()=>{
-        homeScreen();
-    });
+    btnId.addEventListener('click', homeScreen);
 }
 
 async function getHighScore(){
@@ -538,7 +540,7 @@ async function submitHighScore(){
     };
     
     // basic input validation - to be expanded later
-    if( player_name.length>0 && player_name.length<=16 ){
+    if( player_name.length>3 && player_name.length<=16 ){
         btnSubmitPlayerName.removeEventListener('click', submitHighScore);
         // const scores = await getHighScore();
         // checkCurrentScore(scoreValue, scores); // moved to endgame()
@@ -559,8 +561,8 @@ function getPlayerName(){
 
     mainContent.innerHTML = `
     <form id="formPlayerData" onsubmit="event.preventDefault();">
-        <input id="playerName" type="text" class="inputField" placeholder="Player Name" required>
-        <input id="passphrase" type="text" class="inputField" placeholder="Passphrase" required>
+        <input id="playerName" type="text" class="inputField" placeholder="Player Name" minlength="3" maxlength="16" required>
+        <input id="passphrase" type="text" class="inputField" placeholder="Passphrase" minlength="3" maxlength="16" required>
         <label for="newPlayerCheckbox">
             <input id="newPlayerCheckbox" type="checkbox" name="newPlayerCheckbox" value="newPlayer">
             <span>I'm a new player</span>
@@ -644,7 +646,10 @@ function addInGameMenu(){
         getPlayerName();
 
         btnMenu.setAttribute('hidden', true);
-        btnSubmitPlayerName.addEventListener('click', saveGame);
+        btnSubmitPlayerName.addEventListener('click', ()=>{
+            btnSubmitPlayerName.disabled = true;
+            saveGame();
+        });
         //() => {
             // saveGameData.playerName = playerName.value;
             // saveGame();
@@ -713,6 +718,8 @@ function loadGame(){
 
         let numberOfInvalidInputs = formPlayerData.querySelectorAll(":invalid").length;
         if(numberOfInvalidInputs) return;
+
+        btnSubmitPlayerName.disabled = true;
 
         saveGameData.playerName = playerName.value;
         userDetails.playerName = playerName.value;
@@ -834,6 +841,9 @@ function returnToGame() {
 
 function prepareSaveGame() {
 
+    const date = new Date();
+    const saveDate = date.toString().slice(11,15)+'/'+date.getMonth()+'/'+date.getDate();
+
     document.querySelectorAll('.block').forEach(block=>{
         if(!block.classList.contains("found")){
             // console.log('block selected will be reset before save');
@@ -844,7 +854,7 @@ function prepareSaveGame() {
     selectedBlocks = []; // reset array
 
     // save current game and values
-    saveGameData.date       = "10/11/23";
+    saveGameData.date       = saveDate;
     saveGameData.game       = mainContent.innerHTML;
     saveGameData.score      = parseInt(scoreCount.innerText);
     saveGameData.tries      = parseInt(tryCount.innerText);
