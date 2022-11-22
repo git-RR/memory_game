@@ -10,12 +10,11 @@ const homeScreenHTML = `
     <button id="btnOptions" class="btn-type-a">Options</button>
 `;
 
-
 // to change based on screen size
-let col = 4;
-let row = 3;
+let col = 4;    // easy med hard
+let row = 7;   // 4     7    10
 
-const all_blocks = [1,2,3,4,5,6,7,8,9,10];      // all possible blocks
+const all_blocks = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20];      // all possible blocks
 let remainingBlocks = [];                       // blocks to be placed
 let blockMap = [];                              // placement
 let selectedBlocks = [];                        // two blocks chosen
@@ -47,9 +46,12 @@ homeScreen();
 
 function homeScreen(){
     scoreboard.innerHTML = `<h1>New Game Name</h1>`;
+    scoreboard.classList = "";
     mainContent.style.display = "flex";
     mainContent.style.flexDirection = "column";
+
     mainContent.innerHTML = homeScreenHTML;
+
     const btnNewGame = document.getElementById("btnNewGame");
     btnNewGame.addEventListener('click', startGame);
     const btnHighScore = document.getElementById("btnHighScore");
@@ -65,10 +67,22 @@ function homeScreen(){
 
     inGameMenu.innerHTML = ``;
 
-    if( localStorage.getItem("localSaveGameData") ) {
+    const localSaveGameData = JSON.parse( localStorage.getItem("localSaveGameData") );
+
+    if( localSaveGameData ) {
         btnContinue.removeAttribute("hidden");
+        userLogin.innerHTML = `
+            <h1 class="main-heading">
+                User : ${localSaveGameData.playerName}
+            </h1>
+        `;
     } else {
         // btnContinue.setAttribute("hidden", true);
+        userLogin.innerHTML = `
+            <button id="" class="btn-type-a">
+                Login
+            </button>
+        `;
     }
 }
 
@@ -112,10 +126,12 @@ function changeMode(event){
     if (btnClicked.innerText === 'Dark' ) {
         darkMode = true;
         addDarkModeClass(mainSection);
+        addDarkModeClass(document.querySelector('body'));
         btnOptionModeLight.classList.remove('clicked');
     } else if( btnClicked.innerText === 'Light' ) {
         darkMode = false;
         removeDarkModeClass(mainSection);
+        removeDarkModeClass(document.querySelector('body'));
         btnOptionModeDark.classList.remove('clicked');
     }
     btnClicked.classList.add('clicked');
@@ -141,6 +157,8 @@ function startGame(){
         <h1>Score: <span id="scoreCount"></span></h1>
         <h1>Try: <span id="tryCount"></span></h1>
     `;
+    userLogin.innerHTML = ``;
+    scoreboard.classList = "in-game-scoreboard";
 
     //const scoreCount = document.getElementById("scoreCount");
     //const tryCount = document.getElementById("tryCount");
@@ -272,7 +290,7 @@ async function endGame(){
 function generateBlockMap(){
     // generate random placement of blocks and place in blockMap
 
-    if(row*col>=all_blocks.length*2){
+    if(row*col>all_blocks.length*2){
         console.log("Error: row * col > all blocks");
         return
     }
@@ -337,8 +355,8 @@ function generateBlockMap(){
 }
 
 function displayBlocks(){
-    mainSection.style.height = "auto"
-    mainContent.style.display = 'block';
+    // mainSection.style.height = "auto"
+    // mainContent.style.display = 'block';
 
     let i = 0;
 
@@ -620,7 +638,7 @@ let flagToggleMenu = false;
 function addInGameMenu(){
     // in-game menu
 
-    scoreboard.innerHTML += `<button id="btnMenu">o</button>`;
+    scoreboard.innerHTML += `<button id="btnMenu"></button>`;
     btnMenu.addEventListener('click', toggleMenu);
 
     const menu = `
@@ -635,6 +653,7 @@ function addInGameMenu(){
 
     menuBg.addEventListener('click', toggleMenu);
     btnContinue.addEventListener('click', toggleMenu);
+    btnReturnHome = document.getElementById('btnReturnHome');
     btnReturnHome.addEventListener('click', ()=>{
         flagToggleMenu = true;
         toggleMenu();
@@ -804,6 +823,8 @@ function loadGame(){
 
 function returnToGame() {
     
+    scoreboard.classList = "in-game-scoreboard";
+
     //if( saveGameData.tries === 0 ) {
         // start new game
         // startGame();
@@ -840,6 +861,8 @@ function returnToGame() {
 }
 
 function prepareSaveGame() {
+
+    scoreboard.classList = "";
 
     const date = new Date();
     const saveDate = date.toString().slice(11,15)+'/'+date.getMonth()+'/'+date.getDate();

@@ -25,38 +25,49 @@
 .zen {
   background-color: #f27adc; }
 
-body {
+* {
   margin: 0;
   padding: 0;
+  box-sizing: border-box; }
+
+body {
+  width: 100vw;
   overflow-x: hidden;
-  font-family: Helvetica, Arial, sans-serif; }
+  font-family: Helvetica, Arial, sans-serif;
+  transition: 1000ms ease-in-out; }
+  body.darkMode {
+    background-color: #222;
+    color: #fff; }
 
 h1 {
   font-weight: 100;
-  letter-spacing: 0.1rem; }
+  letter-spacing: 0.1rem;
+  margin-bottom: 2rem;
+  margin-top: 2rem; }
 
 main {
   width: 100%;
-  height: 90vh;
-  padding: 1em;
+  height: 100%;
   box-sizing: border-box;
   background-color: #fff;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
-  flex-wrap: nowrap; }
+  flex-wrap: nowrap;
+  transition: 1000ms ease-in-out; }
   main.darkMode {
     background-color: #222;
     color: #fff; }
 
-@media (max-width: 700px) {
+@media (min-width: 600px) {
   main {
-    justify-content: normal; } }
+    justify-content: center; } }
 img.face-img {
   opacity: 0;
   width: 100%;
   border-radius: 50%;
+  box-shadow: 0 0 10px 10px white;
   transition: opacity 0.5s ease-in; }
 
 table {
@@ -107,29 +118,47 @@ label span {
     margin: 0;
     padding: 10px 0; }
 
+#mainSection {
+  height: 100%;
+  width: 100%;
+  transition: 1000ms ease-in-out; }
+
 #mainContent {
   border: 2px solid black;
-  padding: 1em 2em;
-  margin-inline: 1em;
+  padding: 1rem 0;
+  height: 100%;
+  width: 100%;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   flex-wrap: wrap; }
 
+#userLogin {
+  display: block;
+  position: absolute;
+  bottom: 10px; }
+
 #scoreboard {
   display: flex;
   flex-wrap: wrap;
-  justify-content: center; }
-  #scoreboard h1 {
-    margin-top: 0; }
+  justify-content: center;
+  width: 100%; }
   #scoreboard #scoreCount {
     margin-right: 2em; }
+  #scoreboard.in-game-scoreboard {
+    justify-content: flex-start;
+    margin-left: 10%; }
 
+@media (min-width: 600px) {
+  #scoreboard {
+    justify-content: center; }
+    #scoreboard.in-game-scoreboard {
+      justify-content: center; } }
 .row {
   display: flex;
-  flex-wrap: nowrap;
-  justify-content: center;
+  flex-wrap: wrap;
+  justify-content: space-evenly;
   width: 100%; }
   .row::after {
     clear: both; }
@@ -221,10 +250,14 @@ label span {
 
 #btnMenu {
   position: absolute;
-  top: 10px;
-  right: 20px;
-  padding: 0.5rem;
-  font-size: 2rem; }
+  top: 2.2rem;
+  right: 1.2rem;
+  /* down arrow */
+  /* other */
+  width: 2rem;
+  height: 2rem;
+  background: repeating-radial-gradient(#222 0, #222 20%, white 20%, white 40%);
+  border: 2px solid transparent; }
 
 #main-nav {
   display: flex;
@@ -256,8 +289,9 @@ label span {
   box-shadow: 0 0 10px #fff;
   border: 2px solid #333;
   position: relative;
+  width: 22%;
   padding: 10px;
-  margin: 15px;
+  margin-bottom: 15px;
   display: flex;
   justify-content: center;
   overflow: hidden; }
