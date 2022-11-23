@@ -154,7 +154,8 @@ label span {
   #scoreboard {
     justify-content: center; }
     #scoreboard.in-game-scoreboard {
-      justify-content: center; } }
+      justify-content: center;
+      margin-left: 0; } }
 .row {
   display: flex;
   flex-wrap: wrap;
