@@ -41,10 +41,14 @@ let blockClicked = (event) => {
 
 }
 const body = document.querySelector('body');
+const ScreenTransitionDuration = 400;
 
 homeScreen();
 
 function homeScreen(){
+
+    fadeIn(mainSection);
+
     scoreboard.innerHTML = `<h1>New Game Name</h1>`;
     scoreboard.classList = "";
     mainContent.style.display = "flex";
@@ -53,15 +57,45 @@ function homeScreen(){
     mainContent.innerHTML = homeScreenHTML;
 
     const btnNewGame = document.getElementById("btnNewGame");
-    btnNewGame.addEventListener('click', startGame);
+    btnNewGame.addEventListener('click', ()=>{ 
+        fadeOut(mainSection);
+        setTimeout(()=>{ 
+            startGame();
+            fadeIn(mainSection);
+        } , ScreenTransitionDuration);
+    });
     const btnHighScore = document.getElementById("btnHighScore");
-    btnHighScore.addEventListener('click', showHighScore);
+    btnHighScore.addEventListener('click', ()=>{ 
+        fadeOut(mainSection);
+        setTimeout(()=>{ 
+            showHighScore();
+            fadeIn(mainSection);
+        } , ScreenTransitionDuration);
+    });
     const btnOptions = document.getElementById("btnOptions");
-    btnOptions.addEventListener('click', showOptions);
+    btnOptions.addEventListener('click', ()=>{ 
+        fadeOut(mainSection);
+        setTimeout(()=>{ 
+            showOptions();
+            fadeIn(mainSection);
+        } , ScreenTransitionDuration);
+    });
     const btnLoad = document.getElementById("btnLoad");
-    btnLoad.addEventListener('click', loadGame);
+    btnLoad.addEventListener('click', ()=>{ 
+        fadeOut(mainSection);
+        setTimeout(()=>{ 
+            loadGame();
+            fadeIn(mainSection);
+        } , ScreenTransitionDuration);
+    });
     const btnContinue = document.getElementById("btnContinue");
-    btnContinue.addEventListener('click', continueGame);
+    btnContinue.addEventListener('click', ()=>{ 
+        fadeOut(mainSection);
+        setTimeout(()=>{ 
+            continueGame();
+            fadeIn(mainSection);
+        } , ScreenTransitionDuration);
+    });
 
     // btnNewGame.click()
 
@@ -493,7 +527,22 @@ async function showHighScore(){
 }
 
 function addEventListenerBtnReturnHome(btnId){
-    btnId.addEventListener('click', homeScreen);
+    btnId.addEventListener('click', ()=>{
+        fadeOut(mainSection);
+        
+        const inputs = document.querySelectorAll("input[type='text']");
+        inputs.forEach( (input)=>{
+            // to prevent input validation message from showing during transition
+            input.disabled = true;
+        });
+
+        setTimeout(()=>{ 
+
+            homeScreen();
+
+            fadeIn(mainSection);
+        } , ScreenTransitionDuration);
+    });
 }
 
 async function getHighScore(){
@@ -656,8 +705,17 @@ function addInGameMenu(){
     btnReturnHome = document.getElementById('btnReturnHome');
     btnReturnHome.addEventListener('click', ()=>{
         flagToggleMenu = true;
-        toggleMenu();
-        homeScreen();
+
+        fadeOut(mainSection);
+        setTimeout(()=>{ 
+
+            toggleMenu();
+            homeScreen();
+
+            fadeIn(mainSection);
+        } , ScreenTransitionDuration);
+
+        
     });
     // btnSave.addEventListener('click', saveGame);
     btnSave.addEventListener('click', ()=>{
@@ -676,7 +734,10 @@ function addInGameMenu(){
             // toggleMenu(); // show
         //});
         // addEventListenerBtnReturnHome(btnCancelSubmitPlayerName);
-        btnCancelSubmitPlayerName.addEventListener('click', returnToGame);
+        btnCancelSubmitPlayerName.addEventListener('click', ()=>{
+            returnToGame();
+            toggleMenu();
+        });
     });
 }
 
@@ -685,16 +746,22 @@ function toggleMenu(){
     if(!flagToggleMenu){
         // show menu
         menuBg.addEventListener('click', toggleMenu);
-        setTimeout(()=>{menuBg.style.background = "rgba(0,0,0,0.6)";}, 500);
+        setTimeout(()=>{
+            menuBg.style.background = "rgba(0,0,0,0.6)";
+            menuBg.style.backdropFilter = "blur(5px)";
+        }, 500);
         inGameMenu.style.left = "0";
+        inGameMenu.style.opacity = "1";
 
         flagToggleMenu = true;
     }else{
         // hide menu
         menuBg.removeEventListener('click', toggleMenu);
         menuBg.style.background = "rgba(0,0,0,0)";
-        menuBg.style.transition = "";
-        inGameMenu.style.left = "100vw";
+        // menuBg.style.transition = "";
+        inGameMenu.style.opacity = "0";
+        setTimeout( ()=>{ inGameMenu.style.left = "200vw"; }, 500 );
+        // inGameMenu.style.left = "100vw";
 
         flagToggleMenu = false;
     }
@@ -983,7 +1050,19 @@ function saveGameLocal() {
 }
 
 function continueGame() {
+    userLogin.innerHTML = ``;
     console.log('getting data from local storage.');
     saveGameData = JSON.parse( localStorage.getItem("localSaveGameData") );
     returnToGame();
+}
+
+function fadeIn(e){
+    console.log(e)
+    e.style.transition = `opacity ${ScreenTransitionDuration}ms ease-in`;
+    e.style.opacity = "1";
+}
+
+function fadeOut(e){
+    e.style.transition = `opacity ${ScreenTransitionDuration}ms ease-in`;
+    e.style.opacity = "0";
 }
