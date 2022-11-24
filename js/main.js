@@ -11,8 +11,8 @@ const homeScreenHTML = `
 `;
 
 // to change based on screen size
-let col = 4;    // easy med hard
-let row = 7;   // 4     7    10
+let col = 2;    // 4 easy med hard
+let row = 1;   // 4     7    10
 
 const all_blocks = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20];      // all possible blocks
 let remainingBlocks = [];                       // blocks to be placed
@@ -53,6 +53,7 @@ function homeScreen(){
     scoreboard.classList = "";
     mainContent.style.display = "flex";
     mainContent.style.flexDirection = "column";
+    mainContent.style.justifyContent = "center";
 
     mainContent.innerHTML = homeScreenHTML;
 
@@ -275,17 +276,11 @@ function checkIfBlocksMatch(){
 
 async function endGame(){
     const endGameText = `
-        <div 
-            style="
-                position: absolute; top:0; left:0; 
-                background-color:rgba(0,0,0,0.7); 
-                display: flex; align-items: center; justify-content: center;
-                width: 100%; height: 100%; text-align:center;
-            "
-        >
-            <h4 style="color: white; font-size: 6rem;font-family: sans-serif;">
+        <div id="end-game-screen">
+            <h4>
                 Well Done!
             </h4>
+            <p class="loading-text">loading...</p>
         </div>
     `;
 
@@ -315,7 +310,7 @@ async function endGame(){
     } catch (error){
         setTimeout(()=>{
             homeScreen();
-        }, 2000);
+        }, 2000); 
         console.log(error);
     }
 
@@ -455,12 +450,13 @@ async function showHighScore(){
 
     mainContent.style.display = "flex";
     mainContent.style.flexDirection = "column";
+    mainContent.style.justifyContent = "space-evenly";
 
     if( navigator.onLine ){
         console.log('ONline');
 
         mainContent.innerHTML = `
-            <h1>Loading...</h1>
+            <h1 class="loading-text">Loading...</h1>
             <button id="btnReturnHome" class="btn-type-a">Return</button>
         `;
         btnReturnHome = document.getElementById("btnReturnHome");
@@ -794,63 +790,75 @@ function loadGame(){
     // url += "name"+"="+data.name+"&pwd=12345";
 
     // only proceed when navigator.online === true
+    if( navigator.onLine ){
+        getPlayerName();
 
-    getPlayerName();
-    // newPlayerCheckbox.parentNode.setAttribute('hidden', true); // display: flex overrides attribute
+        // newPlayerCheckbox.parentNode.setAttribute('hidden', true); // display: flex overrides attribute
 
-    newPlayerCheckbox.parentNode.style.display = "none";
+        newPlayerCheckbox.parentNode.style.display = "none";
 
-    btnSubmitPlayerName.addEventListener('click', async () => {
+        btnSubmitPlayerName.addEventListener('click', async () => {
 
-        let numberOfInvalidInputs = formPlayerData.querySelectorAll(":invalid").length;
-        if(numberOfInvalidInputs) return;
+            let numberOfInvalidInputs = formPlayerData.querySelectorAll(":invalid").length;
+            if(numberOfInvalidInputs) return;
 
-        btnSubmitPlayerName.disabled = true;
+            btnSubmitPlayerName.disabled = true;
 
-        saveGameData.playerName = playerName.value;
-        userDetails.playerName = playerName.value;
-        userDetails.passphrase = passphrase.value;
+            saveGameData.playerName = playerName.value;
+            userDetails.playerName = playerName.value;
+            userDetails.passphrase = passphrase.value;
 
-        let url = "/api/save-game/?";
-        url += "playerName="+saveGameData.playerName+"&loadGame=1"+"&identifier="+userDetails.passphrase;
-        url = encodeURI(url);
-        const response = await fetch(url);
-        const loadedGameData = await response.json();
+            let url = "/api/save-game/?";
+            url += "playerName="+saveGameData.playerName+"&loadGame=1"+"&identifier="+userDetails.passphrase;
+            url = encodeURI(url);
+            const response = await fetch(url);
+            const loadedGameData = await response.json();
 
-        console.log('LOADED DATA:')
-        console.log(loadedGameData)
-        console.log('------------------------------')
-        // console.log('selected blocks')
-        // console.log(selectedBlocks);
+            console.log('LOADED DATA:')
+            console.log(loadedGameData)
+            console.log('------------------------------')
+            // console.log('selected blocks')
+            // console.log(selectedBlocks);
 
-        // fetch(url)
-        // .then(res => {return res.text();})
-        // .then(txt => {alert(txt);})
-        if( loadedGameData.data === 403 ) { // incorrect input cred's
-            // alert(loadedGameData.message);
-            alert('load failed. check details and try again.');
-            return;
-        }
-        
-        if( loadedGameData.data === 404 ) {
-            console.log(loadedGameData.message);
-        } else{
-            // console.log(loadedGameData.playerName, loadedGameData.blockMap);
-            saveGameData.date       = loadedGameData.date;
-            saveGameData.game       = loadedGameData.game;
-            saveGameData.score      = loadedGameData.score;
-            saveGameData.tries      = loadedGameData.tries;
-            saveGameData.blockMap   = [];
-            if( loadedGameData.blockMap ){                                          // condition only for test
-                loadedGameData.blockMap.forEach(block=>{saveGameData.blockMap.push(block);});
+            // fetch(url)
+            // .then(res => {return res.text();})
+            // .then(txt => {alert(txt);})
+            if( loadedGameData.data === 403 ) { // incorrect input cred's
+                // alert(loadedGameData.message);
+                alert('load failed. check details and try again.');
+                return;
             }
+            
+            if( loadedGameData.data === 404 ) {
+                console.log(loadedGameData.message);
+            } else{
+                // console.log(loadedGameData.playerName, loadedGameData.blockMap);
+                saveGameData.date       = loadedGameData.date;
+                saveGameData.game       = loadedGameData.game;
+                saveGameData.score      = loadedGameData.score;
+                saveGameData.tries      = loadedGameData.tries;
+                saveGameData.blockMap   = [];
+                if( loadedGameData.blockMap ){                                          // condition only for test
+                    loadedGameData.blockMap.forEach(block=>{saveGameData.blockMap.push(block);});
+                }
 
-            returnToGame();
-        }
+                returnToGame();
+            }
+            
+            // put response into local object and call returnToGame
+        });
+        addEventListenerBtnReturnHome(btnCancelSubmitPlayerName);
         
-        // put response into local object and call returnToGame
-    });
-    addEventListenerBtnReturnHome(btnCancelSubmitPlayerName);
+    } else {
+        mainContent.style.justifyContent = "space-evenly";
+        mainContent.innerHTML = `
+            <h1>You're not connected.</h1>
+            <button id="btnReturnHome" class="btn-type-a">Return</button>
+        `;
+        btnReturnHome = document.getElementById("btnReturnHome");
+        addEventListenerBtnReturnHome(btnReturnHome);
+    }
+    
 
     
 /*
@@ -1057,7 +1065,7 @@ function continueGame() {
 }
 
 function fadeIn(e){
-    console.log(e)
+    // console.log(e)
     e.style.transition = `opacity ${ScreenTransitionDuration}ms ease-in`;
     e.style.opacity = "1";
 }
