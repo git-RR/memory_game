@@ -54,7 +54,7 @@ app.post("/api", async (request, response)=>{
     /* end test code */
 });
 
-// main()
+main()
 
 async function main(){
     // const newHighScore = {name:data.name, score:data.score};
@@ -76,7 +76,7 @@ async function main(){
         // const userCred = await getUserCred( client, 'player1' );
         // console.log('FROM TEST : ');
         // console.log(userCred);
-
+        getAllSaveGameData(client);
 
         return client;
 
@@ -395,13 +395,13 @@ async function resetHighScoreCollection(client){
     //console.log(`ID's : ${result.insertedIds}`);
 }
 
-async function clearAllSaveGameData(){
+async function clearAllSaveGameData(client){
     // clear
     const result_delete1 = await client.db(DATABASE).collection(COLLECTION_SAVE_DATA).deleteMany({});
     const result_delete2 = await client.db(DATABASE).collection(COLLECTION_USER_CREDS).deleteMany({});
 }
 
-async function getAllSaveGameData(){
+async function getAllSaveGameData(client){
    // Check databases
    const result1 = await client.db(DATABASE).collection(COLLECTION_SAVE_DATA).find({});
    const result2 = await client.db(DATABASE).collection(COLLECTION_USER_CREDS).find({});

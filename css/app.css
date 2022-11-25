@@ -360,6 +360,8 @@ label span {
   text-transform: capitalize;
   letter-spacing: 0.16rem;
   animation: flash 2s linear infinite; }
+  .loading-text.light-text {
+    color: #fff; }
 
 @keyframes flash {
   0% {

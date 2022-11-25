@@ -19,7 +19,7 @@ let remainingBlocks = [];                       // blocks to be placed
 let blockMap = [];                              // placement
 let selectedBlocks = [];                        // two blocks chosen
 let scoreValue = 0;                             // player's score
-let scorePoint = 0;                             // value added to score on each correct move
+let scorePoint = 0;// MAKE CONST                // value added to score on each correct move
 let tryValue = 0;                               // number of attempts; to be used in score calc
 let blocks = null;
 let blocksArr = null;
@@ -280,12 +280,14 @@ async function endGame(){
             <h4>
                 Well Done!
             </h4>
-            <p class="loading-text">loading...</p>
+            <p class="loading-text light-text">loading...</p>
         </div>
     `;
 
     setTimeout(()=>{
         mainContent.innerHTML += endGameText;
+        btnMenu.setAttribute('hidden', true);
+        scoreboard.classList = "";
     }, 800);
 
     try{
@@ -802,6 +804,8 @@ function loadGame(){
             let numberOfInvalidInputs = formPlayerData.querySelectorAll(":invalid").length;
             if(numberOfInvalidInputs) return;
 
+            scoreboard.innerHTML = `<h1 class="loading-text">loading...</h1>`;
+
             btnSubmitPlayerName.disabled = true;
 
             saveGameData.playerName = playerName.value;
@@ -975,79 +979,92 @@ async function saveGame() {
 
     saveGameLocal();
 
+    scoreboard.innerHTML = `<h1 class="loading-text">saving...</h1>`;
+
     // only proceed from here down when (navigator.onLine === true)
 
-    let newPlayerFlag = newPlayerCheckbox.checked;
-    let foundPlayerNameFlag = false;
+    if( navigator.onLine ){
 
-    // check whether playername is taken
+        let newPlayerFlag = newPlayerCheckbox.checked;
+        let foundPlayerNameFlag = false;
 
-    let url = "/api/save-game/?";
-    url += "playerName"+"="+saveGameData.playerName+"&loadGame=0";
-    url = encodeURI(url);
-    const resData = await fetch(url);
-    const usernameCheck = await resData.json();
-    console.log('Check for username returned: ');
-    console.log(usernameCheck);
-    if( usernameCheck.status === "available" ) {
-        foundPlayerNameFlag = false;
+        // check whether playername is taken
+
+        let url = "/api/save-game/?";
+        url += "playerName"+"="+saveGameData.playerName+"&loadGame=0";
+        url = encodeURI(url);
+        const resData = await fetch(url);
+        const usernameCheck = await resData.json();
+        console.log('Check for username returned: ');
+        console.log(usernameCheck);
+        if( usernameCheck.status === "available" ) {
+            foundPlayerNameFlag = false;
+        } else {
+            foundPlayerNameFlag = true;
+        }
+
+
+        if( newPlayerFlag ) {                                       // use 'POST' to create new
+
+            console.log('trying to create new save game...');
+
+            if( foundPlayerNameFlag ) {                             // do not proceed; username exists; alert user
+                alert('that username is taken.');
+                scoreboard.innerHTML = `<h1 class="">That Username is Taken.</h1>`;
+                console.log('create failed.');
+                return; 
+            }
+
+            // console.log('SAVED DATA:')
+            // console.log(saveGameData)
+            // console.log('------------------------------')
+
+            // create new save game
+            console.log('POSTING!!')
+            const options = {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', },
+                body: JSON.stringify(saveGameData),
+            };
+
+            const response = await fetch('/api/save-game/', options);
+            const json = await response.json();
+
+            console.log('create successful.')
+            console.log(json.data);
+
+        } else {                                                    // use 'PUT' to update
+            
+            if( !foundPlayerNameFlag ) {                             // do not proceed; username does not exist; alert user
+                alert('that username is not found.');
+                scoreboard.innerHTML = `<h1 class="">Username Not Found.</h1>`;
+                console.log('overwrite failed.')
+                return;
+            }
+            // console.log('cannot yet update save games!!!');
+            // update existing save game
+
+            const options = {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json', },
+                body: JSON.stringify(saveGameData),
+            };
+
+            const response = await fetch('/api/save-game', options);
+            const json = await response.json();
+            // alert(json.data);
+        }
+        scoreboard.innerHTML = `<h1 class="">Game Saved to Cloud!</h1>`;
     } else {
-        foundPlayerNameFlag = true;
+        // not connected - only save local
+        scoreboard.innerHTML = `<h1 class="">Game Saved!</h1>`;
     }
 
-
-    if( newPlayerFlag ) {                                       // use 'POST' to create new
-
-        console.log('trying to create new save game...');
-
-        if( foundPlayerNameFlag ) {                             // do not proceed; username exists; alert user
-            alert('that username is taken.');
-            console.log('create failed.');
-            return; 
-        }
-
-        // console.log('SAVED DATA:')
-        // console.log(saveGameData)
-        // console.log('------------------------------')
-
-        // create new save game
-        console.log('POSTING!!')
-        const options = {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', },
-            body: JSON.stringify(saveGameData),
-        };
-
-        const response = await fetch('/api/save-game/', options);
-        const json = await response.json();
-
-        console.log('create successful.')
-        console.log(json.data);
-
-    } else {                                                    // use 'PUT' to update
-        
-        if( !foundPlayerNameFlag ) {                             // do not proceed; username does not exist; alert user
-            alert('that username is not found.');
-            console.log('overwrite failed.')
-            return;
-        }
-        // console.log('cannot yet update save games!!!');
-        // update existing save game
-
-        const options = {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json', },
-            body: JSON.stringify(saveGameData),
-        };
-
-        const response = await fetch('/api/save-game', options);
-        const json = await response.json();
-        alert(json.data);
-    }
-
-    returnToGame();
-    toggleMenu(); // show
-    alert('game data saved');
+    setTimeout( () => {
+        returnToGame();
+        toggleMenu(); // show
+    }, 2000 );
+    // alert('game data saved');
 
 }
 
