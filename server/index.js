@@ -330,6 +330,65 @@ app.put("/api/save-game", async (request, response)=>{
     /* end test code */
 });
 
+app.post("/api/user-cred", async (request, response)=>{
+    const data = request.body;
+
+    const newUserCred = {
+        playerName: data.playerName,
+        passphrase: data.passphrase,
+    };
+
+    const loginFlag = (data.login);
+
+    const client = await main();
+    
+    // get user
+    const userCred = await getUserCred( client, data.playerName );
+
+    // check incoming cred's
+    
+    console.log("_____________________");
+    console.log(`check for ${ data.playerName }`);
+
+    if( userCred === null ) {
+        // not found
+        if( loginFlag ) {
+            // trying to log in
+            response.json({data: 01, status:'Login Failed.'});
+            console.log('Login Failed : User Not Found');
+        } else {
+            // trying to create new user
+            await addNewUser(client, newUserCred);
+            response.json({data: 02, status:'New User Created.'});
+            console.log('New User Created.')
+        }
+    } else {
+        // found
+        if( loginFlag ) {
+            // trying to log in
+            
+            if( userCred.passphrase === newUserCred.passphrase ){
+                // passphrase match
+                response.json({data: 03, status:'Login Succeeded.'});
+                console.log('Login Succeeded.');
+            } else {
+                // passphrase mismatch
+                response.json({data: 04, status:'Login Failed.'});
+                console.log('Login Failed. Check Passphrase.');
+            }
+            
+        } else {
+            // trying to create new user
+            response.json({data: 05, status:'New User Not Created.'});
+            console.log('New User Not Created : Username is taken.');
+        }
+    }
+
+    console.log("_____________________");
+    
+    return;
+});
+
 // save game database
 async function addNewSaveGameData(client, newSaveGameData){
     // NEW SAVE GAME

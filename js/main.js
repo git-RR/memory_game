@@ -103,22 +103,40 @@ function homeScreen(){
     inGameMenu.innerHTML = ``;
 
     const localSaveGameData = JSON.parse( localStorage.getItem("localSaveGameData") );
+    const localuserDetails = JSON.parse( localStorage.getItem("localUserDetails") );
 
-    if( localSaveGameData ) {
+    if( localSaveGameData.game ) {
         btnContinue.removeAttribute("hidden");
+    }
+
+    if( localuserDetails.playerName ) {
         userLogin.innerHTML = `
             <h1 class="main-heading">
-                User : ${localSaveGameData.playerName}
+                Player : ${localuserDetails.playerName}
             </h1>
         `;
     } else {
         // btnContinue.setAttribute("hidden", true);
         userLogin.innerHTML = `
-            <button id="" class="btn-type-a">
-                Login
+            <button id="btnProfile" class="btn-type-a">
+                Profile
             </button>
         `;
+
+        const btnProfile = document.getElementById("btnProfile");
+        btnProfile.addEventListener('click', ()=>{ 
+            fadeOut(mainSection);
+            setTimeout(()=>{ 
+                getPlayerName();
+                
+                btnSubmitPlayerName.addEventListener('click', playerProfile);
+                addEventListenerBtnReturnHome(btnCancelSubmitPlayerName);
+
+                fadeIn(mainSection);
+            } , ScreenTransitionDuration);
+        });
     }
+
 }
 
 let darkMode = false;  // move to localStorage
@@ -1090,4 +1108,60 @@ function fadeIn(e){
 function fadeOut(e){
     e.style.transition = `opacity ${ScreenTransitionDuration}ms ease-in`;
     e.style.opacity = "0";
+}
+
+async function playerProfile() {
+
+    let numberOfInvalidInputs = formPlayerData.querySelectorAll(":invalid").length;
+    if(numberOfInvalidInputs) return;
+
+    btnSubmitPlayerName.removeEventListener('click', playerProfile);
+
+    userDetails.playerName = playerName.value;
+    userDetails.passphrase = passphrase.value; 
+
+    // saveGameLocal();
+
+    scoreboard.innerHTML = `<h1 class="loading-text">Please wait...</h1>`;
+
+    // only proceed from here down when (navigator.onLine === true)
+
+    if( navigator.onLine ){
+
+        let loginFlag = !(newPlayerCheckbox.checked); // unchecked for existing user
+
+        const options = {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', },
+            body: JSON.stringify(
+                {
+                    playerName : saveGameData.playerName,
+                    passphrase : saveGameData.playerName,
+                    login : loginFlag,
+                }
+            ),
+        };
+
+        const response = await fetch('/api/user-cred/', options);
+        const json = await response.json();
+        console.log(json.status);
+        scoreboard.innerHTML = `<h1 class="">${json.status}</h1>`;
+
+        if ( !( json.data === 02 || json.data === 03 ) ) {
+            // 02 - new user created
+            // 03 - successful login
+            return;
+        }
+        
+        localStorage.setItem("localUserDetails", JSON.stringify(userDetails));
+    } else {
+        // not connected - only save local
+        scoreboard.innerHTML = `<h1 class="">Player Details Saved!</h1>`;
+        localStorage.setItem("localUserDetails", JSON.stringify(userDetails));
+    }
+
+    setTimeout( () => {
+        homeScreen();
+    }, 2000 );
+
 }
