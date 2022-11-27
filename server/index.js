@@ -54,7 +54,7 @@ app.post("/api", async (request, response)=>{
     /* end test code */
 });
 
-main()
+//main()
 
 async function main(){
     // const newHighScore = {name:data.name, score:data.score};
@@ -76,7 +76,11 @@ async function main(){
         // const userCred = await getUserCred( client, 'player1' );
         // console.log('FROM TEST : ');
         // console.log(userCred);
-        getAllSaveGameData(client);
+
+        // for(i=0;i<5;i++){
+                // add sample data
+        //     addNewUser(client, {playerName: `hero${i}`, passphrase: '123' });
+        // }
 
         return client;
 
@@ -230,17 +234,22 @@ app.post("/api/save-game", async (request, response)=>{
         blockMap: data.blockMap,
     };
 
-    const newUserCred = {
-        playerName: data.playerName,
-        passphrase: data.passphrase,
-    };
+    // const newUserCred = {
+    //     playerName: data.playerName,
+    //     passphrase: data.passphrase,
+    // };
 
     // cloud db
     const client = await main();
 
     await addNewSaveGameData(client, newSaveGame); // is await necessary?
-    await addNewUser(client, newUserCred); // is await necessary?
+    // await addNewUser(client, newUserCred); // removed since create user is handled by .post(user-cred)
 
+    /* get result to check if this succeeded? */
+
+
+
+    
     // TODO 
     // check whether user has saved game before; 
     // yes: update; no: create new save game
@@ -278,9 +287,20 @@ app.put("/api/save-game", async (request, response)=>{
             blockMap : data.blockMap,
         }
    }
-
+//    const result = ...
     await updateSaveGameData(client, { playerName : data.playerName }, updatedSaveData); // is await necessary?
     response.json({data: 'save game updated.'});
+    
+    /* check if this fails and send back error code. */
+
+    // if( result === null ){
+    //     response.json({data: 06, message: 'Update Failed.' });
+    // } else {
+    //     response.json({data: 07, message: 'Update Succeeded.' });
+    // }
+    
+    
+    
     /* start test code */
 
     // console.log('Updating Save Game:');
@@ -345,6 +365,8 @@ app.post("/api/user-cred", async (request, response)=>{
     // get user
     const userCred = await getUserCred( client, data.playerName );
 
+    console.log(data);
+
     // check incoming cred's
     
     console.log("_____________________");
@@ -354,13 +376,13 @@ app.post("/api/user-cred", async (request, response)=>{
         // not found
         if( loginFlag ) {
             // trying to log in
-            response.json({data: 01, status:'Login Failed.'});
             console.log('Login Failed : User Not Found');
+            response.json({data: 01, status:'Login Failed.'});
         } else {
             // trying to create new user
             await addNewUser(client, newUserCred);
-            response.json({data: 02, status:'New User Created.'});
             console.log('New User Created.')
+            response.json({data: 02, status:'New User Created.'});
         }
     } else {
         // found
@@ -369,18 +391,18 @@ app.post("/api/user-cred", async (request, response)=>{
             
             if( userCred.passphrase === newUserCred.passphrase ){
                 // passphrase match
-                response.json({data: 03, status:'Login Succeeded.'});
                 console.log('Login Succeeded.');
+                response.json({data: 03, status:'Login Succeeded.'});
             } else {
                 // passphrase mismatch
-                response.json({data: 04, status:'Login Failed.'});
                 console.log('Login Failed. Check Passphrase.');
+                response.json({data: 04, status:'Login Failed.'});
             }
             
         } else {
             // trying to create new user
-            response.json({data: 05, status:'New User Not Created.'});
             console.log('New User Not Created : Username is taken.');
+            response.json({data: 05, status:'New User Not Created.'});
         }
     }
 
@@ -421,7 +443,6 @@ async function addNewUser(client, newUserCreds){
 	const result = await client.db(DATABASE).collection(COLLECTION_USER_CREDS).insertOne(newUserCreds);
 	console.log(`New user added with id: ${result.insertedId}`);
 }
-
 
 async function getUserCred(client, player_name){
     // GET USER

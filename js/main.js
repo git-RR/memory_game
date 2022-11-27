@@ -103,16 +103,16 @@ function homeScreen(){
     inGameMenu.innerHTML = ``;
 
     const localSaveGameData = JSON.parse( localStorage.getItem("localSaveGameData") );
-    const localuserDetails = JSON.parse( localStorage.getItem("localUserDetails") );
+    const localUserDetails = JSON.parse( localStorage.getItem("localUserDetails") );
 
-    if( localSaveGameData.game ) {
+    if( localSaveGameData ) {
         btnContinue.removeAttribute("hidden");
     }
 
-    if( localuserDetails.playerName ) {
+    if( localUserDetails ) {
         userLogin.innerHTML = `
             <h1 class="main-heading">
-                Player : ${localuserDetails.playerName}
+                Player : ${localUserDetails.playerName}
             </h1>
         `;
     } else {
@@ -733,16 +733,31 @@ function addInGameMenu(){
 
         
     });
+
     // btnSave.addEventListener('click', saveGame);
+
     btnSave.addEventListener('click', ()=>{
+        
         prepareSaveGame();
         getPlayerName();
 
         btnMenu.setAttribute('hidden', true);
-        btnSubmitPlayerName.addEventListener('click', ()=>{
+
+        btnSubmitPlayerName.addEventListener('click', async () => {
+
             btnSubmitPlayerName.disabled = true;
-            saveGame();
+            const successfulLogin = await playerProfile(); // return null when fail
+
+            if( !successfulLogin ) {
+                btnSubmitPlayerName.disabled = false;
+                return;
+            } else {
+                // user logged in or created new account
+                saveGame();
+            }
+            
         });
+
         //() => {
             // saveGameData.playerName = playerName.value;
             // saveGame();
@@ -989,90 +1004,44 @@ function prepareSaveGame() {
 }
 
 async function saveGame() {
-    let numberOfInvalidInputs = formPlayerData.querySelectorAll(":invalid").length;
-    if(numberOfInvalidInputs) return;
-
-    saveGameData.playerName = playerName.value;
-    saveGameData.passphrase = passphrase.value;     // passphrase not stored in 'save-game-data' db; in user creds db
 
     saveGameLocal();
 
     scoreboard.innerHTML = `<h1 class="loading-text">saving...</h1>`;
 
-    // only proceed from here down when (navigator.onLine === true)
-
     if( navigator.onLine ){
+        // try update first
+        const options = {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', },
+            body: JSON.stringify(saveGameData),
+        };
 
-        let newPlayerFlag = newPlayerCheckbox.checked;
-        let foundPlayerNameFlag = false;
+        const response = await fetch('/api/save-game', options);
+        const json1 = await response.json();
 
-        // check whether playername is taken
-
-        let url = "/api/save-game/?";
-        url += "playerName"+"="+saveGameData.playerName+"&loadGame=0";
-        url = encodeURI(url);
-        const resData = await fetch(url);
-        const usernameCheck = await resData.json();
-        console.log('Check for username returned: ');
-        console.log(usernameCheck);
-        if( usernameCheck.status === "available" ) {
-            foundPlayerNameFlag = false;
+        if( json1 === 07 ) {
+            // update succeeded
+            scoreboard.innerHTML = `<h1 class="">Game Progress Updated!</h1>`;
         } else {
-            foundPlayerNameFlag = true;
+            if ( json1 === 06 ) {
+                // update failed
+                // try create
+                const options = {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', },
+                    body: JSON.stringify(saveGameData),
+                };
+    
+                const response = await fetch('/api/save-game/', options);
+                const json2 = await response.json();
+
+                scoreboard.innerHTML = `<h1 class="">Game Saved To Cloud!</h1>`;
+            } else {
+                scoreboard.innerHTML = `<h1 class="">Failed To Save Game.</h1>`;
+            }
         }
 
-
-        if( newPlayerFlag ) {                                       // use 'POST' to create new
-
-            console.log('trying to create new save game...');
-
-            if( foundPlayerNameFlag ) {                             // do not proceed; username exists; alert user
-                alert('that username is taken.');
-                scoreboard.innerHTML = `<h1 class="">That Username is Taken.</h1>`;
-                console.log('create failed.');
-                return; 
-            }
-
-            // console.log('SAVED DATA:')
-            // console.log(saveGameData)
-            // console.log('------------------------------')
-
-            // create new save game
-            console.log('POSTING!!')
-            const options = {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', },
-                body: JSON.stringify(saveGameData),
-            };
-
-            const response = await fetch('/api/save-game/', options);
-            const json = await response.json();
-
-            console.log('create successful.')
-            console.log(json.data);
-
-        } else {                                                    // use 'PUT' to update
-            
-            if( !foundPlayerNameFlag ) {                             // do not proceed; username does not exist; alert user
-                alert('that username is not found.');
-                scoreboard.innerHTML = `<h1 class="">Username Not Found.</h1>`;
-                console.log('overwrite failed.')
-                return;
-            }
-            // console.log('cannot yet update save games!!!');
-            // update existing save game
-
-            const options = {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json', },
-                body: JSON.stringify(saveGameData),
-            };
-
-            const response = await fetch('/api/save-game', options);
-            const json = await response.json();
-            // alert(json.data);
-        }
-        scoreboard.innerHTML = `<h1 class="">Game Saved to Cloud!</h1>`;
     } else {
         // not connected - only save local
         scoreboard.innerHTML = `<h1 class="">Game Saved!</h1>`;
@@ -1080,11 +1049,110 @@ async function saveGame() {
 
     setTimeout( () => {
         returnToGame();
-        toggleMenu(); // show
+        toggleMenu();
     }, 2000 );
-    // alert('game data saved');
 
 }
+
+
+/* old saveGame() - requires user cred's every time user saves game */
+// async function saveGame() {
+//     let numberOfInvalidInputs = formPlayerData.querySelectorAll(":invalid").length;
+//     if(numberOfInvalidInputs) return;
+
+//     saveGameData.playerName = playerName.value;
+//     saveGameData.passphrase = passphrase.value;     // passphrase not stored in 'save-game-data' db; in user creds db
+
+//     saveGameLocal();
+
+//     scoreboard.innerHTML = `<h1 class="loading-text">saving...</h1>`;
+
+//     // only proceed from here down when (navigator.onLine === true)
+
+//     if( navigator.onLine ){
+
+//         let newPlayerFlag = newPlayerCheckbox.checked;
+//         let foundPlayerNameFlag = false;
+
+//         // check whether playername is taken
+
+//         let url = "/api/save-game/?";
+//         url += "playerName"+"="+saveGameData.playerName+"&loadGame=0";
+//         url = encodeURI(url);
+//         const resData = await fetch(url);
+//         const usernameCheck = await resData.json();
+//         console.log('Check for username returned: ');
+//         console.log(usernameCheck);
+//         if( usernameCheck.status === "available" ) {
+//             foundPlayerNameFlag = false;
+//         } else {
+//             foundPlayerNameFlag = true;
+//         }
+
+
+//         if( newPlayerFlag ) {                                       // use 'POST' to create new
+
+//             console.log('trying to create new save game...');
+
+//             if( foundPlayerNameFlag ) {                             // do not proceed; username exists; alert user
+//                 alert('that username is taken.');
+//                 scoreboard.innerHTML = `<h1 class="">That Username is Taken.</h1>`;
+//                 console.log('create failed.');
+//                 return; 
+//             }
+
+//             // console.log('SAVED DATA:')
+//             // console.log(saveGameData)
+//             // console.log('------------------------------')
+
+//             // create new save game
+//             console.log('POSTING!!')
+//             const options = {
+//                 method: 'POST',
+//                 headers: { 'Content-Type': 'application/json', },
+//                 body: JSON.stringify(saveGameData),
+//             };
+
+//             const response = await fetch('/api/save-game/', options);
+//             const json = await response.json();
+
+//             console.log('create successful.')
+//             console.log(json.data);
+
+//         } else {                                                    // use 'PUT' to update
+            
+//             if( !foundPlayerNameFlag ) {                             // do not proceed; username does not exist; alert user
+//                 alert('that username is not found.');
+//                 scoreboard.innerHTML = `<h1 class="">Username Not Found.</h1>`;
+//                 console.log('overwrite failed.')
+//                 return;
+//             }
+//             // console.log('cannot yet update save games!!!');
+//             // update existing save game
+
+//             const options = {
+//                 method: 'PUT',
+//                 headers: { 'Content-Type': 'application/json', },
+//                 body: JSON.stringify(saveGameData),
+//             };
+
+//             const response = await fetch('/api/save-game', options);
+//             const json = await response.json();
+//             // alert(json.data);
+//         }
+//         scoreboard.innerHTML = `<h1 class="">Game Saved to Cloud!</h1>`;
+//     } else {
+//         // not connected - only save local
+//         scoreboard.innerHTML = `<h1 class="">Game Saved!</h1>`;
+//     }
+
+//     setTimeout( () => {
+//         returnToGame();
+//         toggleMenu(); // show
+//     }, 2000 );
+//     // alert('game data saved');
+
+// }
 
 function saveGameLocal() {
     // prepareSaveGame() must be called before saveGameLocal()
@@ -1120,11 +1188,7 @@ async function playerProfile() {
     userDetails.playerName = playerName.value;
     userDetails.passphrase = passphrase.value; 
 
-    // saveGameLocal();
-
     scoreboard.innerHTML = `<h1 class="loading-text">Please wait...</h1>`;
-
-    // only proceed from here down when (navigator.onLine === true)
 
     if( navigator.onLine ){
 
@@ -1135,13 +1199,13 @@ async function playerProfile() {
             headers: { 'Content-Type': 'application/json', },
             body: JSON.stringify(
                 {
-                    playerName : saveGameData.playerName,
-                    passphrase : saveGameData.playerName,
+                    playerName : userDetails.playerName,
+                    passphrase : userDetails.passphrase,
                     login : loginFlag,
                 }
             ),
         };
-
+        console.log('OPTIONS : ', options);
         const response = await fetch('/api/user-cred/', options);
         const json = await response.json();
         console.log(json.status);
@@ -1150,7 +1214,7 @@ async function playerProfile() {
         if ( !( json.data === 02 || json.data === 03 ) ) {
             // 02 - new user created
             // 03 - successful login
-            return;
+            return null;
         }
         
         localStorage.setItem("localUserDetails", JSON.stringify(userDetails));
@@ -1165,3 +1229,15 @@ async function playerProfile() {
     }, 2000 );
 
 }
+
+// function (){
+//     fadeOut(mainSection);
+//     setTimeout(()=>{ 
+//         getPlayerName();
+        
+//         btnSubmitPlayerName.addEventListener('click', playerProfile);
+//         addEventListenerBtnReturnHome(btnCancelSubmitPlayerName);
+
+//         fadeIn(mainSection);
+//     } , ScreenTransitionDuration);
+// }
