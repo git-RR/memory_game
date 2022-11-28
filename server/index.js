@@ -54,7 +54,7 @@ app.post("/api", async (request, response)=>{
     /* end test code */
 });
 
-//main()
+main()
 
 async function main(){
     // const newHighScore = {name:data.name, score:data.score};
@@ -77,10 +77,29 @@ async function main(){
         // console.log('FROM TEST : ');
         // console.log(userCred);
 
-        // for(i=0;i<5;i++){
-                // add sample data
-        //     addNewUser(client, {playerName: `hero${i}`, passphrase: '123' });
+        // for(i=1;i<4;i++){
+        //         //add sample data
+        //     await addNewUser(client, {playerName: `play${i}`, passphrase: '123' });
         // }
+
+        //const result_delete2 = await client.db(DATABASE).collection(COLLECTION_USER_CREDS).deleteMany({});
+        //console.log(result_delete2);
+
+
+
+        await getAllSaveGameData(client);
+
+        // const result = await updateSaveGameData(client, { playerName : 'play1'}, 	{$set:{
+        //     date        : '11/11/23',
+        //     tries       : 22,
+        //     score       : 12,
+        //     game        : `game data for ${this.playerName}`
+        // }});
+
+        // console.log('Matched Count : ');
+        // console.log(result.matchedCount);
+        // console.log('Modified Count : ');
+        // console.log(result.modifiedCount);
 
         return client;
 
@@ -249,7 +268,7 @@ app.post("/api/save-game", async (request, response)=>{
 
 
 
-    
+
     // TODO 
     // check whether user has saved game before; 
     // yes: update; no: create new save game
@@ -287,11 +306,22 @@ app.put("/api/save-game", async (request, response)=>{
             blockMap : data.blockMap,
         }
    }
-//    const result = ...
-    await updateSaveGameData(client, { playerName : data.playerName }, updatedSaveData); // is await necessary?
-    response.json({data: 'save game updated.'});
+
+    const result = await updateSaveGameData( client, { playerName : data.playerName }, updatedSaveData );
+    // response.json({data: 'save game updated.'});
     
     /* check if this fails and send back error code. */
+
+    if( result.matchedCount || result.modifiedCount ) {
+        response.json({data: 07, message: 'Update Succeeded.' });
+    } else {
+        response.json({data: 06, message: 'Update Failed.' });
+    }
+
+    console.log('Matched Count : ');
+    console.log(result.matchedCount);
+    console.log('Modified Count : ');
+    console.log(result.modifiedCount);
 
     // if( result === null ){
     //     response.json({data: 06, message: 'Update Failed.' });
@@ -424,8 +454,9 @@ async function updateSaveGameData(client, user, new_data){
     // new_data = { playerName : 'player1', ... }
 
     const result = await client.db(DATABASE).collection(COLLECTION_SAVE_DATA).updateOne(user, new_data);
-    console.log('1 document updated...');
-    console.log(result);
+    // console.log('1 document updated...');
+    // console.log(result);
+    return result;
 }
 
 async function getSaveGameData(client, player_name){
@@ -488,7 +519,14 @@ async function getAllSaveGameData(client){
    const db1 = await result1.toArray();
    const db2 = await result2.toArray();
    console.log("STATE OF DB's");
-   console.log(db1, db2);
+   
+   db1.forEach(value => {
+        console.log('player name : ',value.playerName);
+        console.log('date : ', value.date);
+        console.log('tries : ', value.tries);
+        console.log('score : ', value.score);
+   });
+   console.log(db2);
 }
 
 /* test code */

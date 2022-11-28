@@ -218,6 +218,14 @@ label span {
     color: white;
     font-size: 6rem;
     font-family: sans-serif; }
+  #end-game-screen h5 {
+    font-size: 1.6rem;
+    margin-top: 2rem;
+    text-transform: capitalize;
+    letter-spacing: 0.16rem;
+    color: white;
+    font-size: 1.6rem;
+    font-family: sans-serif; }
 
 .btn-type-a {
   -webkit-border-radius: 12px;
@@ -355,7 +363,7 @@ label span {
     margin: 1rem; }
 
 .loading-text {
-  font-size: 1.3rem;
+  font-size: 1.6rem;
   margin-top: 2rem;
   text-transform: capitalize;
   letter-spacing: 0.16rem;

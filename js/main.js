@@ -103,7 +103,7 @@ function homeScreen(){
     inGameMenu.innerHTML = ``;
 
     const localSaveGameData = JSON.parse( localStorage.getItem("localSaveGameData") );
-    const localUserDetails = JSON.parse( localStorage.getItem("localUserDetails") );
+    const localUserDetails = getUserDetails();
 
     if( localSaveGameData ) {
         btnContinue.removeAttribute("hidden");
@@ -129,7 +129,16 @@ function homeScreen(){
             setTimeout(()=>{ 
                 getPlayerName();
                 
-                btnSubmitPlayerName.addEventListener('click', playerProfile);
+                btnSubmitPlayerName.addEventListener('click', async ()=>{
+                    const successfulLogin = await playerProfile();
+
+                    if( successfulLogin ) {
+                        setTimeout( () => {
+                            homeScreen();
+                        }, 2000 );
+                    }
+
+                });
                 addEventListenerBtnReturnHome(btnCancelSubmitPlayerName);
 
                 fadeIn(mainSection);
@@ -736,39 +745,87 @@ function addInGameMenu(){
 
     // btnSave.addEventListener('click', saveGame);
 
-    btnSave.addEventListener('click', ()=>{
-        
+    btnSave.addEventListener('click', async ()=>{
+
+        btnSave.disabled = true;
+
         prepareSaveGame();
-        getPlayerName();
 
-        btnMenu.setAttribute('hidden', true);
+        if( navigator.onLine ){
+            // allow user to login/register and save game
 
-        btnSubmitPlayerName.addEventListener('click', async () => {
-
-            btnSubmitPlayerName.disabled = true;
-            const successfulLogin = await playerProfile(); // return null when fail
-
-            if( !successfulLogin ) {
-                btnSubmitPlayerName.disabled = false;
-                return;
+            if( getUserDetails() ){
+                // user logged in
+                await saveGame();
+    
+                setTimeout( () => {
+                    returnToGame();
+                    toggleMenu();
+                }, 2000 );
+    
             } else {
-                // user logged in or created new account
-                saveGame();
+                // user not logged in
+                getPlayerName();
+    
+                btnMenu.setAttribute('hidden', true);
+        
+                btnSubmitPlayerName.addEventListener('click', async () => {
+        
+                    // btnSubmitPlayerName.disabled = true;
+                    const successfulLogin = await playerProfile(); // return null when fail
+        
+                    if( successfulLogin ) {
+                        // user logged in or created new account
+    
+                        // change screen back to game screen
+    
+                        // setTimeout( () => {
+                        //     returnToGame();
+                        //     toggleMenu();
+                        // }, 2000 );
+    
+                        // then save game
+                        await saveGame();
+    
+                        // return to game
+                        setTimeout( () => {
+                            returnToGame();
+                            toggleMenu();
+                        }, 2000 );
+    
+                    } else {
+                        btnSubmitPlayerName.disabled = false;
+                        return;
+                    }
+                    
+                });
+        
+                btnCancelSubmitPlayerName.addEventListener('click', ()=>{
+                    returnToGame();
+                    toggleMenu();
+                });
             }
-            
-        });
 
-        //() => {
-            // saveGameData.playerName = playerName.value;
-            // saveGame();
-            // returnToGame();
-            // toggleMenu(); // show
-        //});
-        // addEventListenerBtnReturnHome(btnCancelSubmitPlayerName);
-        btnCancelSubmitPlayerName.addEventListener('click', ()=>{
-            returnToGame();
-            toggleMenu();
-        });
+
+        } else {
+            // don't ask for username, only save local
+
+            btnMenu.setAttribute('hidden', true);
+
+            showUserFeedback();
+
+            saveGameLocal();
+    
+            message_text.innerText = `game saved!`;
+            message_text.classList = '';
+
+            // return to game
+            setTimeout( () => {
+                returnToGame();
+                toggleMenu();
+            }, 2000 );
+        }
+
     });
 }
 
@@ -1005,11 +1062,27 @@ function prepareSaveGame() {
 
 async function saveGame() {
 
+    // change all scoreboard changes to overlay text changes
+    // make overlay first from end game screen
+
+    showUserFeedback();
+    // const userFeedback = `
+    //     <div id="end-game-screen">
+    //         <h5 id="message_text" class="loading-text light-text">please wait...</h5>
+    //     </div>
+    // `;
+    // mainContent.innerHTML += userFeedback;
+
+    saveGameData.playerName = userDetails.playerName;
+
     saveGameLocal();
 
-    scoreboard.innerHTML = `<h1 class="loading-text">saving...</h1>`;
+    const message_text = document.getElementById('message_text');
 
-    if( navigator.onLine ){
+    message_text.innerText = `saving...`;
+    // scoreboard.innerHTML = `<h1 class="loading-text">saving...</h1>`;
+
+    if( navigator.onLine ){ // this check is redundant (savegame is only called when online)
         // try update first
         const options = {
             method: 'PUT',
@@ -1020,11 +1093,13 @@ async function saveGame() {
         const response = await fetch('/api/save-game', options);
         const json1 = await response.json();
 
-        if( json1 === 07 ) {
+        if( json1.data === 07 ) {
             // update succeeded
-            scoreboard.innerHTML = `<h1 class="">Game Progress Updated!</h1>`;
+            message_text.innerText = `game progress updated!`;
+            message_text.classList = '';
+            // scoreboard.innerHTML = `<h1 class="">Game Progress Updated!</h1>`;
         } else {
-            if ( json1 === 06 ) {
+            if ( json1.data === 06 ) {
                 // update failed
                 // try create
                 const options = {
@@ -1036,22 +1111,29 @@ async function saveGame() {
                 const response = await fetch('/api/save-game/', options);
                 const json2 = await response.json();
 
-                scoreboard.innerHTML = `<h1 class="">Game Saved To Cloud!</h1>`;
+                message_text.innerText = `game saved to cloud!`;
+                message_text.classList = '';
+                // scoreboard.innerHTML = `<h1 class="">Game Saved To Cloud!</h1>`;
             } else {
-                scoreboard.innerHTML = `<h1 class="">Failed To Save Game.</h1>`;
+                message_text.innerText = `failed to save game.`;
+                message_text.classList = '';
+                // scoreboard.innerHTML = `<h1 class="">Failed To Save Game.</h1>`;
             }
         }
 
     } else {
         // not connected - only save local
-        scoreboard.innerHTML = `<h1 class="">Game Saved!</h1>`;
+        message_text.innerText = `game saved!`;
+        message_text.classList = '';
+        // scoreboard.innerHTML = `<h1 class="">Game Saved!</h1>`;
     }
 
-    setTimeout( () => {
-        returnToGame();
-        toggleMenu();
-    }, 2000 );
+    // setTimeout( () => {
+    //     returnToGame();
+    //     toggleMenu();
+    // }, 2000 );
 
+    // hide overlay
 }
 
 
@@ -1156,8 +1238,14 @@ async function saveGame() {
 
 function saveGameLocal() {
     // prepareSaveGame() must be called before saveGameLocal()
+
+    // showUserFeedback();
+
     localStorage.setItem("localSaveGameData", JSON.stringify(saveGameData));
     console.log('game saved @ '+(new Date()).toString().substring(16,24));
+    
+    // message_text.innerText = `game saved!`;
+    // message_text.classList = '';
 }
 
 function continueGame() {
@@ -1183,7 +1271,9 @@ async function playerProfile() {
     let numberOfInvalidInputs = formPlayerData.querySelectorAll(":invalid").length;
     if(numberOfInvalidInputs) return;
 
-    btnSubmitPlayerName.removeEventListener('click', playerProfile);
+    btnSubmitPlayerName.disabled = true;
+
+    // btnSubmitPlayerName.removeEventListener('click', playerProfile);
 
     userDetails.playerName = playerName.value;
     userDetails.passphrase = passphrase.value; 
@@ -1224,10 +1314,17 @@ async function playerProfile() {
         localStorage.setItem("localUserDetails", JSON.stringify(userDetails));
     }
 
-    setTimeout( () => {
-        homeScreen();
-    }, 2000 );
+    return true;
 
+    // setTimeout( () => {
+    //     homeScreen();
+    // }, 2000 );
+
+}
+
+function getUserDetails(){
+    // returns null when not found
+    return JSON.parse( localStorage.getItem("localUserDetails") );
 }
 
 // function (){
@@ -1241,3 +1338,12 @@ async function playerProfile() {
 //         fadeIn(mainSection);
 //     } , ScreenTransitionDuration);
 // }
+
+function showUserFeedback(){
+    const userFeedback = `
+        <div id="end-game-screen">
+            <h5 id="message_text" class="loading-text light-text">please wait...</h5>
+        </div>
+    `;
+    mainContent.innerHTML += userFeedback;
+}
