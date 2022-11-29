@@ -5,8 +5,8 @@
 const homeScreenHTML = `
     <button id="btnContinue" class="btn-type-a" hidden>Continue</button>
     <button id="btnNewGame" class="btn-type-a">New Game</button>
-    <button id="btnLoad" class="btn-type-a">Load</button>
-    <button id="btnHighScore" class="btn-type-a">High Score</button>
+    <button id="btnLoad" class="btn-type-a" hidden>Load</button>
+    <button id="btnHighScore" class="btn-type-a" hidden>High Score</button>
     <button id="btnOptions" class="btn-type-a">Options</button>
 `;
 
@@ -81,14 +81,6 @@ function homeScreen(){
             fadeIn(mainSection);
         } , ScreenTransitionDuration);
     });
-    const btnLoad = document.getElementById("btnLoad");
-    btnLoad.addEventListener('click', ()=>{ 
-        fadeOut(mainSection);
-        setTimeout(()=>{ 
-            loadGame();
-            fadeIn(mainSection);
-        } , ScreenTransitionDuration);
-    });
     const btnContinue = document.getElementById("btnContinue");
     btnContinue.addEventListener('click', ()=>{ 
         fadeOut(mainSection);
@@ -97,6 +89,14 @@ function homeScreen(){
             fadeIn(mainSection);
         } , ScreenTransitionDuration);
     });
+    const btnLoad = document.getElementById("btnLoad");
+    btnLoad.addEventListener('click', ()=>{ 
+        // fadeOut(mainSection);
+        // setTimeout(()=>{ 
+            checkAndloadGame();
+            // fadeIn(mainSection);
+        // } , ScreenTransitionDuration);
+    });
 
     // btnNewGame.click()
 
@@ -104,6 +104,11 @@ function homeScreen(){
 
     const localSaveGameData = JSON.parse( localStorage.getItem("localSaveGameData") );
     const localUserDetails = getUserDetails();
+
+    if( navigator.onLine ){
+        btnLoad.removeAttribute("hidden");
+        btnHighScore.removeAttribute("hidden");
+    }
 
     if( localSaveGameData ) {
         btnContinue.removeAttribute("hidden");
@@ -116,34 +121,42 @@ function homeScreen(){
             </h1>
         `;
     } else {
-        // btnContinue.setAttribute("hidden", true);
-        userLogin.innerHTML = `
-            <button id="btnProfile" class="btn-type-a">
-                Profile
-            </button>
-        `;
 
-        const btnProfile = document.getElementById("btnProfile");
-        btnProfile.addEventListener('click', ()=>{ 
-            fadeOut(mainSection);
-            setTimeout(()=>{ 
-                getPlayerName();
-                
-                btnSubmitPlayerName.addEventListener('click', async ()=>{
-                    const successfulLogin = await playerProfile();
+        if( navigator.onLine ){
 
-                    if( successfulLogin ) {
-                        setTimeout( () => {
-                            homeScreen();
-                        }, 2000 );
-                    }
+            userLogin.innerHTML = `
+                <button id="btnProfile" class="btn-type-a">
+                    Profile
+                </button>
+            `;
+    
+            const btnProfile = document.getElementById("btnProfile");
+            btnProfile.addEventListener('click', ()=>{ 
+                fadeOut(mainSection);
+                setTimeout(()=>{ 
+                    getPlayerName();
+                    
+                    btnSubmitPlayerName.addEventListener('click', async ()=>{
+                        const successfulLogin = await playerProfile();
+    
+                        if( successfulLogin ) {
+                            setTimeout( () => {
+                                homeScreen();
+                            }, 2000 );
+                        }
+    
+                    });
+                    addEventListenerBtnReturnHome(btnCancelSubmitPlayerName);
+    
+                    fadeIn(mainSection);
+                } , ScreenTransitionDuration);
+            });
 
-                });
-                addEventListenerBtnReturnHome(btnCancelSubmitPlayerName);
+        } else {
+            // do nothing when offline
+            // do not show button to register/login
+        }
 
-                fadeIn(mainSection);
-            } , ScreenTransitionDuration);
-        });
     }
 
 }
@@ -782,6 +795,16 @@ function addInGameMenu(){
                         // setTimeout( () => {
                         //     returnToGame();
                         //     toggleMenu();
+
+                                // // then save game
+                                // await saveGame();
+            
+                                // // return to game
+                                // setTimeout( () => {
+                                //     returnToGame();
+                                //     toggleMenu();
+                                // }, 2000 );
+
                         // }, 2000 );
     
                         // then save game
@@ -872,123 +895,244 @@ let userDetails = {
     passphrase: '',
 }
 
-function loadGame(){
-    // load prev save-game
+async function checkAndloadGame(){
+    btnLoad.disabled = true;
 
-    // let url = "/api/save-game/?";
-    // let data = {name: 'sakura'};
-    // url.searchParams.append("name",data('name'));
-    // url = encodeURI(url.slice(0, -1));
-    // url += "name"+"="+data.name+"&pwd=12345";
+    // prepareSaveGame();
 
-    // only proceed when navigator.online === true
     if( navigator.onLine ){
-        getPlayerName();
+        // allow user to login/register and save game
+       
+        if( getUserDetails() ){
+            // user logged in
 
-        // newPlayerCheckbox.parentNode.setAttribute('hidden', true); // display: flex overrides attribute
+            // showUserFeedback();
+            // const message_text = document.getElementById('message_text');
+            // message_text.innerText = `loading...`;
 
-        newPlayerCheckbox.parentNode.style.display = "none";
+            await loadGame();
 
-        btnSubmitPlayerName.addEventListener('click', async () => {
+            // setTimeout( () => {
+            //     returnToGame();
+            //     // toggleMenu();
+            // }, 2000 );
 
-            let numberOfInvalidInputs = formPlayerData.querySelectorAll(":invalid").length;
-            if(numberOfInvalidInputs) return;
+        } else {
+            // user not logged in
 
-            scoreboard.innerHTML = `<h1 class="loading-text">loading...</h1>`;
+            fadeOut(mainSection);
 
-            btnSubmitPlayerName.disabled = true;
+            setTimeout(()=>{ 
+                getPlayerName();
 
-            saveGameData.playerName = playerName.value;
-            userDetails.playerName = playerName.value;
-            userDetails.passphrase = passphrase.value;
+                btnSubmitPlayerName.addEventListener('click', async () => {
 
-            let url = "/api/save-game/?";
-            url += "playerName="+saveGameData.playerName+"&loadGame=1"+"&identifier="+userDetails.passphrase;
-            url = encodeURI(url);
-            const response = await fetch(url);
-            const loadedGameData = await response.json();
-
-            console.log('LOADED DATA:')
-            console.log(loadedGameData)
-            console.log('------------------------------')
-            // console.log('selected blocks')
-            // console.log(selectedBlocks);
-
-            // fetch(url)
-            // .then(res => {return res.text();})
-            // .then(txt => {alert(txt);})
-            if( loadedGameData.data === 403 ) { // incorrect input cred's
-                // alert(loadedGameData.message);
-                alert('load failed. check details and try again.');
-                return;
-            }
-            
-            if( loadedGameData.data === 404 ) {
-                console.log(loadedGameData.message);
-            } else{
-                // console.log(loadedGameData.playerName, loadedGameData.blockMap);
-                saveGameData.date       = loadedGameData.date;
-                saveGameData.game       = loadedGameData.game;
-                saveGameData.score      = loadedGameData.score;
-                saveGameData.tries      = loadedGameData.tries;
-                saveGameData.blockMap   = [];
-                if( loadedGameData.blockMap ){                                          // condition only for test
-                    loadedGameData.blockMap.forEach(block=>{saveGameData.blockMap.push(block);});
-                }
-
-                returnToGame();
-            }
-            
-            // put response into local object and call returnToGame
-        });
-        addEventListenerBtnReturnHome(btnCancelSubmitPlayerName);
-        
-    } else {
-        mainContent.style.justifyContent = "space-evenly";
-        mainContent.innerHTML = `
-            <h1>You're not connected.</h1>
-            <button id="btnReturnHome" class="btn-type-a">Return</button>
-        `;
-        btnReturnHome = document.getElementById("btnReturnHome");
-        addEventListenerBtnReturnHome(btnReturnHome);
-    }
+                    const successfulLogin = await playerProfile(); // return null when fail
     
-
+                    if( successfulLogin ) {
+                        // user logged in or created new account
+                        // check for load game
     
-/*
-    if( saveGameData.tries === 0 ) {
-        // start new game
-        alert('no game data to load');
-    } else {
-        // load game
-        mainContent.style.flexDirection = "row";    
-        mainContent.innerHTML = saveGameData.game;
-        scoreboard.innerHTML = `
-            <h1>Score: <span id="scoreCount"></span></h1>
-            <h1>Try: <span id="tryCount"></span></h1>
-        `;
-
-        scoreValue = saveGameData.score;
-        tryValue = saveGameData.tries;
+                        await loadGame();
+    
+                    } else {
+                        btnSubmitPlayerName.disabled = false;
+                        return;
+                    }
+                    
+                });
         
-        scoreCount.innerText = scoreValue;
-        tryCount.innerText = tryValue;
+                btnCancelSubmitPlayerName.addEventListener('click', ()=>{
+                    // returnToGame();
+                    // toggleMenu();
+                    homeScreen();
+                });
 
-        blocks = document.querySelectorAll(".block");
-        blocksArr = Array.from(blocks);                   // or  arr = [...nodeList]
-        blockMap = saveGameData.blockMap;
-        blockMap = [];
-        saveGameData.blockMap.forEach(block=>{blockMap.push(block);});
-        //console.log(blocks)
-        addBlockEventListeners();
+                fadeIn(mainSection);
 
-        addInGameMenu();
-
-        alert('game data loaded');
-        console.log(blockMap);
-        console.log(saveGameData.blockMap);
-    }*/
+            } , ScreenTransitionDuration);
+    
+            
+        }
+    } 
+    // else {
+    //     message_text.innerText = `feature cannot be used when offline`;
+    // }
 }
+
+
+async function loadGame(){
+
+    const localUserDetails = getUserDetails();
+
+    showUserFeedback();
+    const message_text = document.getElementById('message_text');
+    message_text.innerText = `loading...`;
+
+    userDetails.playerName = localUserDetails.playerName;
+    userDetails.passphrase = localUserDetails.passphrase;
+
+    let url = "/api/save-game/?";
+    url += "playerName="+userDetails.playerName+"&identifier="+userDetails.passphrase;
+    url = encodeURI(url);
+
+    const response = await fetch(url);
+    const loadedGameData = await response.json();
+
+    if( loadedGameData.data === 08 || loadedGameData.data === 09 ) {
+        // 08 - authentication failed; 09 - no game data to load
+        // console.log(data.message) // uncomment to check error message
+        if( loadedGameData.data === 09 ){
+            message_text.innerText = `no previous save data!`;
+        } else {
+            message_text.innerText = `failed to load game!`;
+        }
+        message_text.classList = '';
+
+        setTimeout( () => {
+            homeScreen();
+        }, 2000 );
+
+        return;
+    }
+
+    message_text.innerText = `load game completed!`;
+    message_text.classList = '';
+    
+    saveGameData.date       = loadedGameData.date;
+    saveGameData.game       = loadedGameData.game;
+    saveGameData.score      = loadedGameData.score;
+    saveGameData.tries      = loadedGameData.tries;
+    saveGameData.blockMap   = [];
+    if( loadedGameData.blockMap ){ // redundant check
+        loadedGameData.blockMap.forEach(block=>{saveGameData.blockMap.push(block);});
+    }
+
+    setTimeout( () => {
+        returnToGame();
+    }, 2000 );
+
+}
+
+
+// old load game - required user cred's before each load
+// function loadGame(){
+//     // load prev save-game
+
+//     // let url = "/api/save-game/?";
+//     // let data = {name: 'sakura'};
+//     // url.searchParams.append("name",data('name'));
+//     // url = encodeURI(url.slice(0, -1));
+//     // url += "name"+"="+data.name+"&pwd=12345";
+
+//     // only proceed when navigator.online === true
+//     if( navigator.onLine ){
+//         getPlayerName();
+
+//         // newPlayerCheckbox.parentNode.setAttribute('hidden', true); // display: flex overrides attribute
+
+//         newPlayerCheckbox.parentNode.style.display = "none";
+
+//         btnSubmitPlayerName.addEventListener('click', async () => {
+
+//             let numberOfInvalidInputs = formPlayerData.querySelectorAll(":invalid").length;
+//             if(numberOfInvalidInputs) return;
+
+//             scoreboard.innerHTML = `<h1 class="loading-text">loading...</h1>`;
+
+//             btnSubmitPlayerName.disabled = true;
+
+//             saveGameData.playerName = playerName.value;
+//             userDetails.playerName = playerName.value;
+//             userDetails.passphrase = passphrase.value;
+
+//             let url = "/api/save-game/?";
+//             url += "playerName="+saveGameData.playerName+"&loadGame=1"+"&identifier="+userDetails.passphrase;
+//             url = encodeURI(url);
+//             const response = await fetch(url);
+//             const loadedGameData = await response.json();
+
+//             console.log('LOADED DATA:')
+//             console.log(loadedGameData)
+//             console.log('------------------------------')
+//             // console.log('selected blocks')
+//             // console.log(selectedBlocks);
+
+//             // fetch(url)
+//             // .then(res => {return res.text();})
+//             // .then(txt => {alert(txt);})
+//             if( loadedGameData.data === 403 ) { // incorrect input cred's
+//                 // alert(loadedGameData.message);
+//                 alert('load failed. check details and try again.');
+//                 return;
+//             }
+            
+//             if( loadedGameData.data === 404 ) {
+//                 console.log(loadedGameData.message);
+//             } else{
+//                 // console.log(loadedGameData.playerName, loadedGameData.blockMap);
+//                 saveGameData.date       = loadedGameData.date;
+//                 saveGameData.game       = loadedGameData.game;
+//                 saveGameData.score      = loadedGameData.score;
+//                 saveGameData.tries      = loadedGameData.tries;
+//                 saveGameData.blockMap   = [];
+//                 if( loadedGameData.blockMap ){                                          // condition only for test
+//                     loadedGameData.blockMap.forEach(block=>{saveGameData.blockMap.push(block);});
+//                 }
+
+//                 returnToGame();
+//             }
+            
+//             // put response into local object and call returnToGame
+//         });
+//         addEventListenerBtnReturnHome(btnCancelSubmitPlayerName);
+        
+//     } else {
+//         mainContent.style.justifyContent = "space-evenly";
+//         mainContent.innerHTML = `
+//             <h1>You're not connected.</h1>
+//             <button id="btnReturnHome" class="btn-type-a">Return</button>
+//         `;
+//         btnReturnHome = document.getElementById("btnReturnHome");
+//         addEventListenerBtnReturnHome(btnReturnHome);
+//     }
+    
+
+    
+// /*
+//     if( saveGameData.tries === 0 ) {
+//         // start new game
+//         alert('no game data to load');
+//     } else {
+//         // load game
+//         mainContent.style.flexDirection = "row";    
+//         mainContent.innerHTML = saveGameData.game;
+//         scoreboard.innerHTML = `
+//             <h1>Score: <span id="scoreCount"></span></h1>
+//             <h1>Try: <span id="tryCount"></span></h1>
+//         `;
+
+//         scoreValue = saveGameData.score;
+//         tryValue = saveGameData.tries;
+        
+//         scoreCount.innerText = scoreValue;
+//         tryCount.innerText = tryValue;
+
+//         blocks = document.querySelectorAll(".block");
+//         blocksArr = Array.from(blocks);                   // or  arr = [...nodeList]
+//         blockMap = saveGameData.blockMap;
+//         blockMap = [];
+//         saveGameData.blockMap.forEach(block=>{blockMap.push(block);});
+//         //console.log(blocks)
+//         addBlockEventListeners();
+
+//         addInGameMenu();
+
+//         alert('game data loaded');
+//         console.log(blockMap);
+//         console.log(saveGameData.blockMap);
+//     }*/
+// }
 
 function returnToGame() {
     
@@ -1137,7 +1281,7 @@ async function saveGame() {
 }
 
 
-/* old saveGame() - requires user cred's every time user saves game */
+// old saveGame() - required user cred's every time user saves game
 // async function saveGame() {
 //     let numberOfInvalidInputs = formPlayerData.querySelectorAll(":invalid").length;
 //     if(numberOfInvalidInputs) return;
@@ -1280,7 +1424,7 @@ async function playerProfile() {
 
     scoreboard.innerHTML = `<h1 class="loading-text">Please wait...</h1>`;
 
-    if( navigator.onLine ){
+    if( navigator.onLine ){ // this check is redundant
 
         let loginFlag = !(newPlayerCheckbox.checked); // unchecked for existing user
 
@@ -1310,8 +1454,10 @@ async function playerProfile() {
         localStorage.setItem("localUserDetails", JSON.stringify(userDetails));
     } else {
         // not connected - only save local
-        scoreboard.innerHTML = `<h1 class="">Player Details Saved!</h1>`;
-        localStorage.setItem("localUserDetails", JSON.stringify(userDetails));
+        // scoreboard.innerHTML = `<h1 class="">Player Details Saved!</h1>`;
+        // localStorage.setItem("localUserDetails", JSON.stringify(userDetails));
+
+        // do nothing -  this function will not be called when offline
     }
 
     return true;
@@ -1347,3 +1493,4 @@ function showUserFeedback(){
     `;
     mainContent.innerHTML += userFeedback;
 }
+

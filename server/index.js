@@ -133,53 +133,68 @@ async function getHighScores(client){
 app.get('/api/save-game', async (request, response)=>{
  
     const player_name_query = request.query.playerName;
-    const load_game_query = parseInt(request.query.loadGame);
+    // const load_game_query = parseInt(request.query.loadGame);
     const identifier_query = request.query.identifier;  // passphrase
 
     // cloud db
     const client = await main();
     const userCred = await getUserCred( client, player_name_query );
 
-    if( userCred === null ) {
-        // did not find user in user db
-
-        if( load_game_query ) {
-            // load game
-            response.json({data: 404, message: `did not find : ${player_name_query}`});
-            console.log(`LOAD-FAILED : did not find : ${player_name_query}`);
-            return;
+    if( userCred.passphrase === identifier_query ){
+        // auth successful
+        const game_data = await getSaveGameData(client, player_name_query);
+        if( game_data === null ){
+            response.json({data: 09, message: `Failed To Load Game. No Game Data.`});
         } else {
-            // create new user    
-            response.json({data: 403, status:'available'});
-            console.log('check result : username is available');
-            return;
+            response.json(game_data);
         }
-
     } else {
-        // user found
-
-        if( !load_game_query ){
-            // create new user
-            response.json({data: 403, status:'unavailable'});
-            console.log('check result : username already exists');
-            return;
-        } else {
-            // load game 
-
-            if( userCred.passphrase === identifier_query ){
-                // auth successful
-                const game_data = await getSaveGameData(client, player_name_query);
-                response.json(game_data);
-            } else {
-                // auth failed
-                response.json({data: 404, message: `user '${player_name_query}' authentication failed!`});
-                console.log(`AUTH-FAILED : did not match : ${player_name_query} passphrase`);
-                return;
-            }
-
-        }
-
+        response.json({data: 08, message: `Failed To Authenticate. Load Aborted.`});
     }
+    return;
+
+    // old code; did player auth here
+
+    // if( userCred === null ) {
+    //     // did not find user in user db
+
+    //     if( load_game_query ) {
+    //         // load game
+    //         response.json({data: 404, message: `did not find : ${player_name_query}`});
+    //         console.log(`LOAD-FAILED : did not find : ${player_name_query}`);
+    //         return;
+    //     } else {
+    //         // create new user    
+    //         response.json({data: 403, status:'available'});
+    //         console.log('check result : username is available');
+    //         return;
+    //     }
+
+    // } else {
+    //     // user found
+
+    //     if( !load_game_query ){
+    //         // create new user
+    //         response.json({data: 403, status:'unavailable'});
+    //         console.log('check result : username already exists');
+    //         return;
+    //     } else {
+    //         // load game 
+
+    //         if( userCred.passphrase === identifier_query ){
+    //             // auth successful
+    //             const game_data = await getSaveGameData(client, player_name_query);
+    //             response.json(game_data);
+    //         } else {
+    //             // auth failed
+    //             response.json({data: 404, message: `user '${player_name_query}' authentication failed!`});
+    //             console.log(`AUTH-FAILED : did not match : ${player_name_query} passphrase`);
+    //             return;
+    //         }
+
+    //     }
+
+    // }
 
     /* test code */
 
