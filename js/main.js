@@ -19,7 +19,7 @@ let remainingBlocks = [];                       // blocks to be placed
 let blockMap = [];                              // placement
 let selectedBlocks = [];                        // two blocks chosen
 let scoreValue = 0;                             // player's score
-let scorePoint = 0;// MAKE CONST                // value added to score on each correct move
+const scorePoint = 1;// MAKE CONST                // value added to score on each correct move
 let tryValue = 0;                               // number of attempts; to be used in score calc
 let blocks = null;
 let blocksArr = null;
@@ -320,7 +320,7 @@ async function endGame(){
             <h4>
                 Well Done!
             </h4>
-            <p class="loading-text light-text">loading...</p>
+            <h5 id="message_text" class="loading-text light-text">please wait...</h5>
         </div>
     `;
 
@@ -328,33 +328,44 @@ async function endGame(){
         mainContent.innerHTML += endGameText;
         btnMenu.setAttribute('hidden', true);
         scoreboard.classList = "";
+
+        setTimeout(()=>{
+            if( navigator.onLine ){
+                newHighScore();
+            } else {
+                homeScreen();
+            }
+        }, 2000); 
+
     }, 800);
 
-    try{
-        const sortedScores = await getHighScore();
+    
 
-        if(sortedScores.length===0){
-            throw "getHighScore() returned []";
-        }
+    // try{
+    //     const sortedScores = await getHighScore();
 
-        setTimeout(()=>{
-            if( scoreValue > parseInt(sortedScores[sortedScores.length-1].score) ){
-                deleteScoreId = sortedScores[sortedScores.length-1]._id  // global variable
-                getPlayerName();
-                newPlayerCheckbox.parentNode.style.display = "none";
-                btnSubmitPlayerName.addEventListener('click', submitHighScore);
-                addEventListenerBtnReturnHome(btnCancelSubmitPlayerName);
-            }else{
-                showHighScore(); // show high scores at end of game
-            }
-        }, 2000);
+    //     if(sortedScores.length===0){
+    //         throw "getHighScore() returned []";
+    //     }
 
-    } catch (error){
-        setTimeout(()=>{
-            homeScreen();
-        }, 2000); 
-        console.log(error);
-    }
+    //     setTimeout(()=>{
+    //         if( scoreValue > parseInt(sortedScores[sortedScores.length-1].score) ){
+    //             deleteScoreId = sortedScores[sortedScores.length-1]._id  // global variable
+    //             getPlayerName();
+    //             newPlayerCheckbox.parentNode.style.display = "none";
+    //             btnSubmitPlayerName.addEventListener('click', submitHighScore);
+    //             addEventListenerBtnReturnHome(btnCancelSubmitPlayerName);
+    //         }else{
+    //             showHighScore(); // show high scores at end of game
+    //         }
+    //     }, 2000);
+
+    // } catch (error){
+    //     setTimeout(()=>{
+    //         homeScreen();
+    //     }, 2000); 
+    //     console.log(error);
+    // }
 
 }
 
@@ -494,7 +505,7 @@ async function showHighScore(){
     mainContent.style.flexDirection = "column";
     mainContent.style.justifyContent = "space-evenly";
 
-    if( navigator.onLine ){
+    if( navigator.onLine ){ // redundant check
         console.log('ONline');
 
         mainContent.innerHTML = `
@@ -527,7 +538,7 @@ async function showHighScore(){
             for(i=0; i<highScores.length; i++){
                 highSorePage += `
                     <tr>
-                        <td>${highScores[i].name}</td>
+                        <td>${highScores[i].playerName}</td>
                         <td>${highScores[i].score}</td>
                     </tr>
                 `;
@@ -584,9 +595,9 @@ function addEventListenerBtnReturnHome(btnId){
 }
 
 async function getHighScore(){
-    if(navigator.onLine){
+    if(navigator.onLine){ // redundant check
         try{
-            const response = await fetch("/api");
+            const response = await fetch("/api/highscore");
             const json = await response.json();
             // console.log(response)
             let sortedScores = [...json];
@@ -623,16 +634,110 @@ async function getHighScore(){
 //     return sortedScores;
 // }
 
-let player_name = "";
-let deleteScoreId = "";
+async function newHighScore(){
+    const overlayScreen = document.getElementById("end-game-screen");
+    overlayScreen.innerHTML = `<h5 id="message_text" class="loading-text light-text">please wait...</h5>`;
+
+    try{
+        const sortedScores = await getHighScore();
+
+        if( sortedScores.length === 0 ){
+            message_text.innerText = `failed to connect to server.`;
+            message_text.classList = '';
+            throw "getHighScore() returned []";
+        }
+
+        if( scoreValue > parseInt(sortedScores[sortedScores.length-1].score) ){
+            // new high score
+            // deleteScoreId = sortedScores[sortedScores.length-1]._id  // global variable
+
+            if( getUserDetails() ){
+                // user logged in
+    
+                // showUserFeedback();
+                // const message_text = document.getElementById('message_text');
+                message_text.innerText = `submitting high score...`;
+    
+                await submitHighScore();
+
+                setTimeout(()=>{
+                    fadeOut(mainSection);
+                    setTimeout(()=>{
+                        showHighScore();
+                        fadeIn(mainSection);
+                    }, ScreenTransitionDuration); 
+                }, 2000); 
+    
+            } else {
+                // user not logged in
+    
+                fadeOut(mainSection);
+    
+                setTimeout(()=>{ 
+                    getPlayerName();
+    
+                    btnSubmitPlayerName.addEventListener('click', async () => {
+    
+                        const successfulLogin = await playerProfile(); // return null when fail
+        
+                        if( successfulLogin ) {
+                            // user logged in or created new account
+
+                            showUserFeedback();
+
+                            await submitHighScore();
+
+                            setTimeout(()=>{
+                                fadeOut(mainSection);
+                                setTimeout(()=>{
+                                    showHighScore();
+                                    fadeIn(mainSection);
+                                }, ScreenTransitionDuration); 
+                            }, 2000); 
+
+                        } else {
+                            btnSubmitPlayerName.disabled = false;
+                            return;
+                        }
+                        
+                    });
+            
+                    btnCancelSubmitPlayerName.addEventListener('click', ()=>{
+                        homeScreen();
+                    });
+    
+                    fadeIn(mainSection);
+    
+                } , ScreenTransitionDuration);
+            }
+          
+        }else{
+            // no new high score
+            showHighScore();
+        }
+
+    } catch (error){
+        fadeOut(mainSection);
+        setTimeout(()=>{
+            homeScreen();
+            fadeIn(mainSection);
+        }, ScreenTransitionDuration); 
+        // console.log(error);
+    }
+
+}
+
+// let deleteScoreId = "";
 
 async function submitHighScore(){
-    player_name = playerName.value; // global 
+    // let player_name = playerName.value; // global 
+
+    const localUserDetails = getUserDetails();
 
     let newHighScore = {
-        name: player_name,
+        playerName: localUserDetails.playerName,
+        passphrase: localUserDetails.passphrase,
         score: scoreValue,
-        id: deleteScoreId,
     };
 
     // console.log('DATA SENT TO DATABASE: ')
@@ -644,18 +749,29 @@ async function submitHighScore(){
         body: JSON.stringify(newHighScore),
     };
     
-    // basic input validation - to be expanded later
-    if( player_name.length>3 && player_name.length<=16 ){
-        btnSubmitPlayerName.removeEventListener('click', submitHighScore);
-        // const scores = await getHighScore();
-        // checkCurrentScore(scoreValue, scores); // moved to endgame()
-        
-        const response = await fetch('/api', options);
-        const json = await response.json();
+    const response = await fetch('/api/highscore', options);
+    const json = await response.json();
 
-        console.log(json.data);
-        showHighScore();                    // show high score list with new high score
+    if( json.data === 10 || json.data === 11 ){
+        message_text.innerText = `failed to submit high score.`;
+        message_text.classList = '';
+    } else {
+        message_text.innerText = `high score submitted!`;
+        message_text.classList = '';
     }
+
+    // // basic input validation - to be expanded later
+    // if( player_name.length>3 && player_name.length<=16 ){
+    //     btnSubmitPlayerName.removeEventListener('click', submitHighScore);
+    //     // const scores = await getHighScore();
+    //     // checkCurrentScore(scoreValue, scores); // moved to endgame()
+        
+    //     const response = await fetch('/api', options);
+    //     const json = await response.json();
+
+    //     console.log(json.data);
+    //     showHighScore();                    // show high score list with new high score
+    // }
 
 }
 
@@ -952,7 +1068,6 @@ async function checkAndloadGame(){
 
             } , ScreenTransitionDuration);
     
-            
         }
     } 
     // else {

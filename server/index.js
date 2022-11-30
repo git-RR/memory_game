@@ -18,20 +18,50 @@ app.use(express.json());
 
 app.use(express.static('../'));     // for testing only
 
-app.get('/api', async (request, response)=>{
+app.get('/api/highscore', async (request, response)=>{
     const client = await main();
 	const result = await getHighScores(client);
     //response.json(sample_data)
+    console.log("---GET---");
+    // console.log(result);
+    // console.log("------")
     response.json(result);
 });
 
-app.post("/api", async (request, response)=>{
+app.post("/api/highscore", async (request, response)=>{
     const data = request.body;
-    const newHighScore = {name:data.name, score:data.score};
-    const id = data.id;
+    const newHighScore = { playerName: data.playerName, score: data.score };
+    // const id = data.id;
     const client = await main();
-    await addNewHighScore(client, newHighScore);
-    await deleteOldHighScore(client, id);
+    
+    const allHighScores = await getHighScores(client);
+    const deleteId = allHighScores[allHighScores.length-1]._id
+
+    const userCred = await getUserCred(client, data.playerName);
+    console.log("---POST---");
+
+    if( userCred !== null ){
+        // user found
+        if( userCred.passphrase === data.passphrase ){
+            // match
+            await addNewHighScore(client, newHighScore);
+            await deleteOldHighScore(client, deleteId);
+            console.log(`added new high score : ${newHighScore}`);
+            console.log(`deleted high score : ${deleteId}`);
+            response.json({data: 12, message: `High Score Submitted.`});
+        } else {
+            // do not match
+            response.json({data: 10, message: `Failed To Authenticate. Aborted High Score Submit.`});
+            console.log(`failed to authenticate`)
+        }
+    } else {
+        // user not found
+        response.json({data: 11, message: `User Not Found. Aborted High Score Submit.`});
+        console.log(`user not found`)
+
+    }
+
+    return;
 
     /* start test code */
     // console.log('New High Score:');
@@ -50,7 +80,7 @@ app.post("/api", async (request, response)=>{
 
     // console.log('New High Score List:');
     // console.log(sample_data);
-    response.json({data: 'high score list updated!'});
+    // response.json({data: 'high score list updated!'});
     /* end test code */
 });
 
@@ -87,7 +117,7 @@ async function main(){
 
 
 
-        await getAllSaveGameData(client);
+        //await getAllSaveGameData(client);
 
         // const result = await updateSaveGameData(client, { playerName : 'play1'}, 	{$set:{
         //     date        : '11/11/23',
@@ -512,7 +542,7 @@ function removeDuplicateUser(){
 async function resetHighScoreCollection(client){
     let defaultScores = [];
     for (let i=1; i<=high_score_list_limit; i++) {
-        defaultScores.push({name:'player unknown',score:0});
+        defaultScores.push({playerName:'player unknown',score:0});
     }
     const result_delete = await client.db(DATABASE).collection(COLLECTION_HIGHSCORE).deleteMany({}); // clear database
     console.log(`${result_delete.deletedCount} documents deleted.`);
