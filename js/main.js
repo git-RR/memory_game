@@ -19,7 +19,7 @@ let remainingBlocks = [];                       // blocks to be placed
 let blockMap = [];                              // placement
 let selectedBlocks = [];                        // two blocks chosen
 let scoreValue = 0;                             // player's score
-const scorePoint = 1;// MAKE CONST                // value added to score on each correct move
+const scorePoint = 2;// MAKE CONST                // value added to score on each correct move
 let tryValue = 0;                               // number of attempts; to be used in score calc
 let blocks = null;
 let blocksArr = null;
@@ -93,7 +93,7 @@ function homeScreen(){
     btnLoad.addEventListener('click', ()=>{ 
         // fadeOut(mainSection);
         // setTimeout(()=>{ 
-            checkAndloadGame();
+            checkAndLoadGame();
             // fadeIn(mainSection);
         // } , ScreenTransitionDuration);
     });
@@ -169,6 +169,8 @@ function showOptions(){
     scoreboard.innerHTML = `
         <h1>Options Menu</h1>
     `;
+
+    userLogin.innerHTML = ``;
 
     let optionsPage = `
         <div class="row">
@@ -505,6 +507,8 @@ async function showHighScore(){
     mainContent.style.flexDirection = "column";
     mainContent.style.justifyContent = "space-evenly";
 
+    userLogin.innerHTML = ``;
+
     if( navigator.onLine ){ // redundant check
         console.log('ONline');
 
@@ -797,6 +801,7 @@ function getPlayerName(){
     formPlayerData.style.alignItems = "center";
     // btnSubmitPlayerName.addEventListener('click', submitHighScore);
     // addEventListenerBtnReturnHome(btnCancelSubmitPlayerName);
+     userLogin.innerHTML = ``;
 }
 
 /* async function checkCurrentScore(currentScore, sortedScores){
@@ -1011,7 +1016,7 @@ let userDetails = {
     passphrase: '',
 }
 
-async function checkAndloadGame(){
+async function checkAndLoadGame(){
     btnLoad.disabled = true;
 
     // prepareSaveGame();
