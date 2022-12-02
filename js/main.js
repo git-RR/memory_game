@@ -10,9 +10,7 @@ const homeScreenHTML = `
     <button id="btnOptions" class="btn-type-a">Options</button>
 `;
 
-// to change based on screen size
-let col = 2;    // 4 easy med hard
-let row = 1;   // 4     7    10
+
 
 const all_blocks = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20];      // all possible blocks
 let remainingBlocks = [];                       // blocks to be placed
@@ -31,7 +29,7 @@ let blockClicked = (event) => {
     console.log(blocksArr.indexOf(block));
     selectedBlocks.push(blocksArr.indexOf(block));
     
-    //event.target.style.backgroundColor = "red";         // shows blocks that have been selected
+    event.target.parentNode.style.backgroundColor = "grey";         // shows blocks that have been selected
 
     if(selectedBlocks.length>=2){
         removeBlockEventListeners();                    // prevents more than 2 blocks from being clicked
@@ -42,11 +40,16 @@ let blockClicked = (event) => {
 }
 const body = document.querySelector('body');
 const ScreenTransitionDuration = 400;
+let darkMode = false;
+let difficulty = 'normal';
+let col = 2;
+let row = 1;
 
 homeScreen();
 
 function homeScreen(){
 
+    preferences();
     fadeIn(mainSection);
 
     scoreboard.innerHTML = `<h1>New Game Name</h1>`;
@@ -161,8 +164,6 @@ function homeScreen(){
 
 }
 
-let darkMode = false;  // move to localStorage
-
 function showOptions(){
     mainContent.innerHTML = ``;
     mainContent.style.flexDirection = "column";
@@ -183,6 +184,14 @@ function showOptions(){
                             <button id="btnOptionModeLight" class="btnOption ${(darkMode)?'':'clicked'}">Light</button>
                         </td>
                     </tr>
+                    <tr>
+                        <td>Difficulty</td>
+                        <td>
+                            <button id="btnOptionDifficultyEasy" class="btnOption ${(difficulty==='easy')?'clicked':''}">Easy</button>
+                            <button id="btnOptionDifficultyNormal" class="btnOption ${(difficulty==='normal')?'clicked':''}">Med</button>
+                            <button id="btnOptionDifficultyHard" class="btnOption ${(difficulty==='hard')?'clicked':''}">Hard</button>
+                        </td>
+                    </tr>
                 </tbody>
             </table>
         </div>
@@ -194,13 +203,37 @@ function showOptions(){
 
     btnOptionModeDark.addEventListener('click', changeMode);
     btnOptionModeLight.addEventListener('click', changeMode);
+    btnOptionDifficultyEasy.addEventListener('click', changeDifficulty);
+    btnOptionDifficultyNormal.addEventListener('click', changeDifficulty);
+    btnOptionDifficultyHard.addEventListener('click', changeDifficulty);
 
+}
+
+function changeDifficulty(event){
+    const btnClicked = event.target;
+
+    btnOptionDifficultyEasy.classList.remove('clicked');
+    btnOptionDifficultyNormal.classList.remove('clicked');
+    btnOptionDifficultyHard.classList.remove('clicked');
+
+    if( btnClicked.getAttribute('id') === 'btnOptionDifficultyEasy'){
+        difficulty = 'easy';
+    }else if( btnClicked.getAttribute('id') === 'btnOptionDifficultyNormal'){
+        difficulty = 'normal';
+    }else if( btnClicked.getAttribute('id') === 'btnOptionDifficultyHard'){
+        difficulty = 'hard';
+    }
+
+    btnClicked.classList.add('clicked');
+    updateLocalStorage("preferences", "difficulty", difficulty);
+    setDifficulty();
+    // console.log(difficulty+' mode selected')
 }
 
 function changeMode(event){
     const btnClicked = event.target;
     // console.log( 'Mode : '+btnClicked );
-    if (btnClicked.innerText === 'Dark' ) {
+    if( btnClicked.innerText === 'Dark' ) {
         darkMode = true;
         addDarkModeClass(mainSection);
         addDarkModeClass(document.querySelector('body'));
@@ -213,6 +246,8 @@ function changeMode(event){
     }
     btnClicked.classList.add('clicked');
     // console.log(btnClicked.classList)
+    // localStorage.setItem( "preferences", JSON.stringify( { darkMode : darkMode } ) );
+    updateLocalStorage("preferences", "darkMode", darkMode);
 }
 
 function addDarkModeClass(element){
@@ -227,9 +262,64 @@ function removeDarkModeClass(element){
     }
 }
 
+function updateLocalStorage(key, prop, value){
+    const object = JSON.parse( localStorage.getItem(key) );
+    if( object ){
+        if( object.hasOwnProperty(prop) ){
+            object[prop] = value;
+            localStorage.setItem( "preferences", JSON.stringify( object ) );
+        } else {
+            console.log('error: \''+prop+'\' does not exist.');
+        }
+    }else{
+        console.log('error: \''+key+'\' does not exist.');
+    }
+}
+
+function preferences(){
+
+    const preferences = JSON.parse( localStorage.getItem("preferences") );
+
+    if( !preferences ){
+        // no preferences; set to defaults
+        localStorage.setItem( "preferences", JSON.stringify( { 
+            darkMode : false,
+            difficulty: 'normal',
+        } ) );
+
+    } else {
+        // set global variable
+        darkMode = preferences.darkMode;
+        difficulty = preferences.difficulty;
+    }
+
+    if ( darkMode ) {
+        // addDarkModeClass(mainSection);
+        addDarkModeClass(document.querySelector('body'));
+    } else {
+        // removeDarkModeClass(mainSection);
+        removeDarkModeClass(document.querySelector('body'));
+    }
+
+    setDifficulty();
+}
+
+function setDifficulty(){
+    // let col = 2;    // 4 easy med hard
+    // let row = 1;   // 4     7    10
+    col = 4;
+    switch ( difficulty ) {
+        case 'easy':    row = 4; break;
+        case 'hard':    row = 10; break;
+        case 'normal': 
+        default:        row = 7;break;
+    }
+    // console.log('row: '+row);
+}
+
 function startGame(){
     mainContent.innerHTML = ``;
-    mainContent.style.flexDirection = "row";    
+    // mainContent.style.flexDirection = "row";    
     scoreboard.innerHTML = `
         <h1>Score: <span id="scoreCount"></span></h1>
         <h1>Try: <span id="tryCount"></span></h1>
@@ -1080,7 +1170,6 @@ async function checkAndLoadGame(){
     // }
 }
 
-
 async function loadGame(){
 
     const localUserDetails = getUserDetails();
@@ -1133,7 +1222,6 @@ async function loadGame(){
     }, 2000 );
 
 }
-
 
 // old load game - required user cred's before each load
 // function loadGame(){
@@ -1264,7 +1352,7 @@ function returnToGame() {
         // alert('no game data to load');
     //} else {
         // load game
-        mainContent.style.flexDirection = "row";    
+        // mainContent.style.flexDirection = "row";  
         mainContent.innerHTML = saveGameData.game;
         scoreboard.innerHTML = `
             <h1>Score: <span id="scoreCount"></span></h1>
