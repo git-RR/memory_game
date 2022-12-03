@@ -59,6 +59,13 @@ main {
   main.darkMode {
     color: #fff; }
 
+a {
+  text-decoration: none;
+  color: inherit; }
+
+ul {
+  list-style-type: none; }
+
 @media (min-width: 600px) {
   main {
     justify-content: center; } }
@@ -226,6 +233,21 @@ label span {
     color: white;
     font-size: 1.6rem;
     font-family: sans-serif; }
+
+#helpOption {
+  background-color: rgba(0, 0, 0, 0.9);
+  box-shadow: 0 0 1.2rem 1.2rem rgba(0, 0, 0, 0.9); }
+  #helpOption p {
+    padding: 0 1rem;
+    line-height: 1.5rem; }
+  #helpOption h3 {
+    margin: 1.2rem 0 1rem; }
+  #helpOption ul {
+    line-height: 1.5rem; }
+  #helpOption button {
+    margin: 2rem 0 1rem; }
+  #helpOption a {
+    text-decoration: underline; }
 
 .btn-type-a {
   -webkit-border-radius: 12px;

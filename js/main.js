@@ -17,7 +17,7 @@ let remainingBlocks = [];                       // blocks to be placed
 let blockMap = [];                              // placement
 let selectedBlocks = [];                        // two blocks chosen
 let scoreValue = 0;                             // player's score
-const scorePoint = 2;// MAKE CONST                // value added to score on each correct move
+const scorePoint = 2;                           // value added to score on each correct move
 let tryValue = 0;                               // number of attempts; to be used in score calc
 let blocks = null;
 let blocksArr = null;
@@ -192,6 +192,18 @@ function showOptions(){
                             <button id="btnOptionDifficultyHard" class="btnOption ${(difficulty==='hard')?'clicked':''}">Hard</button>
                         </td>
                     </tr>
+                    <tr>
+                        <td>Local Save Data</td>
+                        <td>
+                            <button id="btnOptionClearData" class="btnOption">Clear All</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>More Info.</td>
+                        <td>
+                            <button id="btnOptionMoreInfo" class="btnOption">Help</button>
+                        </td>
+                    </tr>
                 </tbody>
             </table>
         </div>
@@ -206,7 +218,52 @@ function showOptions(){
     btnOptionDifficultyEasy.addEventListener('click', changeDifficulty);
     btnOptionDifficultyNormal.addEventListener('click', changeDifficulty);
     btnOptionDifficultyHard.addEventListener('click', changeDifficulty);
+    if( localStorage.getItem("localSaveGameData") ){
+        btnOptionClearData.classList.remove('clicked');
+        btnOptionClearData.addEventListener('click', clearLocalSaveGameData);
+    } else {
+        btnOptionClearData.classList.add('clicked');
+        btnOptionClearData.removeEventListener('click', clearLocalSaveGameData);
+    }
+    btnOptionMoreInfo.addEventListener('click', showHelp);
+}
 
+function showHelp(){
+    const userFeedback = `
+        <div id="end-game-screen">
+            <div id="helpOption">
+                <h3>Instructions</h3>
+                <p>
+                    This is a memory game. Just click on the blocks until you find the matching ones. <br>
+                    Points are awarded for each pair found. <br>
+                    Points are deducted for too many attempts, so tread carefully.<br>
+                    That's it. Have fun!
+                </p>
+                <h3>Features</h3>
+                <ul>
+                    <li>Play offline.</li>
+                    <li>Play in dark-mode.</li>
+                    <li>Change game difficulty.</li>
+                    <li>Publish high-score to online scoreboard.</li>
+                    <li>Save game and continue on another device.</li>
+                </ul>
+                <h3>Credits</h3>
+                <p>This game was created by <a href="#">Rishaad</a>.</p>
+                <button id="btnOptionReturn" class="btnOption">Return</button>
+            </div>
+        </div>
+    `;
+    
+    mainContent.innerHTML += userFeedback;
+    
+    btnOptionReturn.addEventListener('click', ()=>{
+        showOptions();
+    });
+}
+
+function clearLocalSaveGameData(){
+    localStorage.removeItem("localSaveGameData");
+    btnOptionClearData.classList.add('clicked');
 }
 
 function changeDifficulty(event){
@@ -1153,11 +1210,13 @@ async function checkAndLoadGame(){
                     
                 });
         
-                btnCancelSubmitPlayerName.addEventListener('click', ()=>{
-                    // returnToGame();
-                    // toggleMenu();
-                    homeScreen();
-                });
+                // btnCancelSubmitPlayerName.addEventListener('click', ()=>{
+                //     // returnToGame();
+                //     // toggleMenu();
+                //     homeScreen(); // caused instant swicth to home instead of fade
+                // });
+
+                addEventListenerBtnReturnHome(btnCancelSubmitPlayerName);
 
                 fadeIn(mainSection);
 
