@@ -666,6 +666,14 @@ async function showHighScore(){
         btnReturnHome = document.getElementById("btnReturnHome");
         addEventListenerBtnReturnHome(btnReturnHome);
 
+        btnReturnHome.addEventListener('click', ()=>{
+            console.log('aborting fetch')
+            controller.abort();
+        });
+
+        const controller = new AbortController();
+        const signal = controller.signal;
+
         try {
             let highSorePage = `
                 <div class="row">
@@ -679,7 +687,7 @@ async function showHighScore(){
                         <tbody style="text-align: center;">
             `;
 
-            let highScores = await getHighScore();
+            let highScores = await getHighScore(signal);
             //console.log(highScores)
 
             if(highScores.length===0){
@@ -709,8 +717,8 @@ async function showHighScore(){
             `;
             console.log(error);
         } finally {
-            btnReturnHome = document.getElementById("btnReturnHome");
-            addEventListenerBtnReturnHome(btnReturnHome);
+            // btnReturnHome = document.getElementById("btnReturnHome");
+            // addEventListenerBtnReturnHome(btnReturnHome);
         }
 
     }else{
@@ -720,9 +728,12 @@ async function showHighScore(){
             <h1>You're not connected.</h1>
             <button id="btnReturnHome" class="btn-type-a">Return</button>
         `;
-        btnReturnHome = document.getElementById("btnReturnHome");
-        addEventListenerBtnReturnHome(btnReturnHome);
-    } 
+        // btnReturnHome = document.getElementById("btnReturnHome");
+        // addEventListenerBtnReturnHome(btnReturnHome);
+    }
+
+    btnReturnHome = document.getElementById("btnReturnHome");
+    addEventListenerBtnReturnHome(btnReturnHome);
     
 }
 
@@ -745,14 +756,23 @@ function addEventListenerBtnReturnHome(btnId){
     });
 }
 
-async function getHighScore(){
+async function getHighScore( signal = null ){
     if(navigator.onLine){ // redundant check
         try{
-            const response = await fetch("/api/highscore");
+            let response;
+            if( signal ){
+                response = await fetch("/api/highscore", {method:'get', signal:signal});
+                console.log("ABORT SIGNAL")
+            } else {
+                response = await fetch("/api/highscore");
+                console.log("NO SIGNAL")
+            }
+            console.log("signal");
+            console.log(signal)
             const json = await response.json();
             // console.log(response)
             let sortedScores = [...json];
-            console.log(sortedScores);
+            // console.log(sortedScores);
             // return sortHighScore(json);
             return sortedScores;
         } catch(error){

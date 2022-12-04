@@ -84,7 +84,7 @@ app.post("/api/highscore", async (request, response)=>{
     /* end test code */
 });
 
-main()
+// main()
 
 async function main(){
     // const newHighScore = {name:data.name, score:data.score};
