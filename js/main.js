@@ -36,16 +36,38 @@ let blockClicked = (event) => {
         checkIfBlocksMatch();
         setTimeout(addBlockEventListeners, 400);
     }
-
+    if( JSON.parse( localStorage.getItem("preferences") ).playAudio ){
+        soundClick();
+    }
 }
 const body = document.querySelector('body');
 const ScreenTransitionDuration = 400;
+let playAudio = true;
 let darkMode = false;
 let difficulty = 'normal';
 let col = 2;
 let row = 1;
 
 homeScreen();
+
+window.addEventListener('click', playBgAudio);
+
+function playBgAudio(){
+    soundtrack.setAttribute('src',"./sounds/Copyright Free Chill Background Music  - _Way Home_ by @Tokyo Music.mp3");
+    soundtrack.setAttribute('loop',"");
+    soundtrack.volume = 0.1;
+    if( JSON.parse( localStorage.getItem("preferences") ).playAudio ){
+        soundtrack.play();
+    }
+    window.removeEventListener('click', playBgAudio);
+}
+
+function soundClick(){
+    const clickSound = new Audio('./sounds/Click Sound Effect.mp3');
+    clickSound.play();
+    clickSound.loop = false;
+    clickSound.volume = 0.20;
+}
 
 function homeScreen(){
 
@@ -161,7 +183,22 @@ function homeScreen(){
         }
 
     }
+}
 
+function audioControl(event){
+    const btnClicked = event.target;
+
+    if( btnClicked.innerText === 'Play' ) {
+        soundtrack.play();
+        playAudio = true;
+        btnOptionSoundMute.classList.remove('clicked');
+    } else if( btnClicked.innerText === 'Mute' ) {
+        soundtrack.pause();
+        playAudio = false;
+        btnOptionSoundPlay.classList.remove('clicked');
+    }
+    btnClicked.classList.add('clicked');
+    updateLocalStorage("preferences", "playAudio", playAudio);
 }
 
 function showOptions(){
@@ -177,6 +214,13 @@ function showOptions(){
         <div class="row">
             <table class="col-12">
                 <tbody style="text-align: center;">
+                    <tr>
+                        <td>Sound</td>
+                        <td>
+                            <button id="btnOptionSoundPlay" class="btnOption ${(playAudio)?'clicked':''}">Play</button>
+                            <button id="btnOptionSoundMute" class="btnOption ${(playAudio)?'':'clicked'}">Mute</button>
+                        </td>
+                    </tr>
                     <tr>
                         <td>Display Mode</td>
                         <td>
@@ -226,18 +270,20 @@ function showOptions(){
         btnOptionClearData.removeEventListener('click', clearLocalSaveGameData);
     }
     btnOptionMoreInfo.addEventListener('click', showHelp);
+    btnOptionSoundPlay.addEventListener('click', audioControl);
+    btnOptionSoundMute.addEventListener('click', audioControl);
 }
 
 function showHelp(){
     const userFeedback = `
         <div id="end-game-screen">
-            <div id="helpOption">
+            <div id="helpOption" class="${darkMode?'darkMode':''}">
                 <h3>Instructions</h3>
                 <p>
                     This is a memory game. Just click on the blocks until you find the matching ones. <br>
                     Points are awarded for each pair found. <br>
                     Points are deducted for too many attempts, so tread carefully.<br>
-                    That's it. Have fun!
+                    That's it. Enjoy!
                 </p>
                 <h3>Features</h3>
                 <ul>
@@ -248,7 +294,8 @@ function showHelp(){
                     <li>Save game and continue on another device.</li>
                 </ul>
                 <h3>Credits</h3>
-                <p>This game was created by <a href="#">Rishaad</a>.</p>
+                <p>This game was created by <a href="www.com" target="_blank">Rishaad</a>.</p>
+                <p>Background music: <a href="https://soundcloud.com/user-356546060" target="_blank">Tokyo Music Walker - Way Home</a> (Creative Commons License)</p>
                 <button id="btnOptionReturn" class="btnOption">Return</button>
             </div>
         </div>
@@ -340,12 +387,14 @@ function preferences(){
     if( !preferences ){
         // no preferences; set to defaults
         localStorage.setItem( "preferences", JSON.stringify( { 
+            playAudio: true,
             darkMode : false,
             difficulty: 'normal',
         } ) );
 
     } else {
         // set global variable
+        playAudio = preferences.playAudio;
         darkMode = preferences.darkMode;
         difficulty = preferences.difficulty;
     }
