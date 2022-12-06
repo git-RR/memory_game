@@ -477,7 +477,7 @@ app.post("/api/user-cred", async (request, response)=>{
         } else {
             // trying to create new user
             console.log('New User Not Created : Username is taken.');
-            response.json({data: 05, status:'New User Not Created.'});
+            response.json({data: 05, status:'Username is Taken.'});
         }
     }
 

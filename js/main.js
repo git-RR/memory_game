@@ -19,8 +19,8 @@ let selectedBlocks = [];                        // two blocks chosen
 let scoreValue = 0;                             // player's score
 const scorePoint = 2;                           // value added to score on each correct move
 let tryValue = 0;                               // number of attempts; to be used in score calc
-let blocks = null;
-let blocksArr = null;
+let blocks = null;                              // array of block nodes
+let blocksArr = null;                           
 //let endOfGameFlag = false;
 let blockClicked = (event) => {
     const block = event.target.parentNode;
@@ -29,7 +29,9 @@ let blockClicked = (event) => {
     console.log(blocksArr.indexOf(block));
     selectedBlocks.push(blocksArr.indexOf(block));
     
-    event.target.parentNode.style.backgroundColor = "grey";         // shows blocks that have been selected
+    if(colorBlock){
+        event.target.parentNode.style.backgroundColor = "grey";         // shows blocks that have been selected
+    }
 
     if(selectedBlocks.length>=2){
         removeBlockEventListeners();                    // prevents more than 2 blocks from being clicked
@@ -45,6 +47,7 @@ const ScreenTransitionDuration = 400;
 let playAudio = true;
 let darkMode = false;
 let difficulty = 'normal';
+let colorBlock = true;
 let col = 2;
 let row = 1;
 
@@ -237,6 +240,13 @@ function showOptions(){
                         </td>
                     </tr>
                     <tr>
+                        <td>Color Turned Blocks</td>
+                        <td>
+                            <button id="btnOptionColorTurnedBlocksYes" class="btnOption ${(colorBlock)?'clicked':''}">Yes</button>
+                            <button id="btnOptionColorTurnedBlocksNo" class="btnOption ${(colorBlock)?'':'clicked'}">No</button>
+                        </td>
+                    </tr>
+                    <tr>
                         <td>Local Save Data</td>
                         <td>
                             <button id="btnOptionClearData" class="btnOption">Clear All</button>
@@ -272,11 +282,13 @@ function showOptions(){
     btnOptionMoreInfo.addEventListener('click', showHelp);
     btnOptionSoundPlay.addEventListener('click', audioControl);
     btnOptionSoundMute.addEventListener('click', audioControl);
+    btnOptionColorTurnedBlocksYes.addEventListener('click', colorTurnedBlock);
+    btnOptionColorTurnedBlocksNo.addEventListener('click', colorTurnedBlock);
 }
 
 function showHelp(){
     const userFeedback = `
-        <div id="end-game-screen">
+        <div id="feedbackScreen">
             <div id="helpOption" class="${darkMode?'darkMode':''}">
                 <h3>Instructions</h3>
                 <p>
@@ -311,6 +323,19 @@ function showHelp(){
 function clearLocalSaveGameData(){
     localStorage.removeItem("localSaveGameData");
     btnOptionClearData.classList.add('clicked');
+}
+
+function colorTurnedBlock(event){
+    const btnClicked = event.target;
+    if( btnClicked.innerText === 'Yes' ) {
+        colorBlock = true;
+        btnOptionColorTurnedBlocksNo.classList.remove('clicked');
+    } else if( btnClicked.innerText === 'No' ) {
+        colorBlock = false;
+        btnOptionColorTurnedBlocksYes.classList.remove('clicked');
+    }
+    btnClicked.classList.add('clicked');
+    updateLocalStorage("preferences", "colorBlock", colorBlock);
 }
 
 function changeDifficulty(event){
@@ -390,6 +415,7 @@ function preferences(){
             playAudio: true,
             darkMode : false,
             difficulty: 'normal',
+            colorBlock: true,
         } ) );
 
     } else {
@@ -397,6 +423,7 @@ function preferences(){
         playAudio = preferences.playAudio;
         darkMode = preferences.darkMode;
         difficulty = preferences.difficulty;
+        colorBlock = preferences.colorBlock;
     }
 
     if ( darkMode ) {
@@ -514,7 +541,7 @@ function checkIfBlocksMatch(){
 
 async function endGame(){
     const endGameText = `
-        <div id="end-game-screen">
+        <div id="feedbackScreen">
             <h4>
                 Well Done!
             </h4>
@@ -648,7 +675,7 @@ function displayBlocks(){
         for (let c=0; c<col; c++) {
             let block = blockMap[i];
             rowDisplay += `
-                <div class="block">
+                <div class="block ${darkMode?'darkMode':''}">
                     <img class="face-img col-1" src="images/face-${block}.png" alt="">
                     <div class="blockArea"></div>
                 </div>
@@ -855,7 +882,7 @@ async function getHighScore( signal = null ){
 // }
 
 async function newHighScore(){
-    const overlayScreen = document.getElementById("end-game-screen");
+    const overlayScreen = document.getElementById("feedbackScreen");
     overlayScreen.innerHTML = `<h5 id="message_text" class="loading-text light-text">please wait...</h5>`;
 
     try{
@@ -1547,7 +1574,7 @@ async function saveGame() {
 
     showUserFeedback();
     // const userFeedback = `
-    //     <div id="end-game-screen">
+    //     <div id="feedbackScreen">
     //         <h5 id="message_text" class="loading-text light-text">please wait...</h5>
     //     </div>
     // `;
@@ -1823,7 +1850,7 @@ function getUserDetails(){
 
 function showUserFeedback(){
     const userFeedback = `
-        <div id="end-game-screen">
+        <div id="feedbackScreen">
             <h5 id="message_text" class="loading-text light-text">please wait...</h5>
         </div>
     `;

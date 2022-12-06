@@ -44,7 +44,8 @@ h1 {
   font-weight: 100;
   letter-spacing: 0.1rem;
   margin-bottom: 2rem;
-  margin-top: 2rem; }
+  margin-top: 2rem;
+  font-size: 1.6rem; }
 
 main {
   width: 100%;
@@ -72,8 +73,7 @@ ul {
 img.face-img {
   opacity: 0;
   width: 100%;
-  border-radius: 50%;
-  box-shadow: 0 0 10px 10px white;
+  box-shadow: 0 0 0px 10px white;
   transition: opacity 0.5s ease-in; }
 
 table {
@@ -209,7 +209,7 @@ label span {
 .col-12 {
   width: 100%; }
 
-#end-game-screen {
+#feedbackScreen {
   position: absolute;
   top: 0;
   left: 0;
@@ -222,11 +222,11 @@ label span {
   height: 100%;
   text-align: center;
   color: white; }
-  #end-game-screen h4 {
+  #feedbackScreen h4 {
     color: white;
     font-size: 6rem;
     font-family: sans-serif; }
-  #end-game-screen h5 {
+  #feedbackScreen h5 {
     font-size: 1.6rem;
     margin-top: 2rem;
     text-transform: capitalize;
@@ -299,7 +299,11 @@ label span {
     border: 2px solid grey;
     translate: -6px -6px; }
   .btnOption:nth-child(1) {
-    margin-right: 10px; }
+    margin-right: 6px; }
+  .btnOption:nth-child(2) {
+    margin-right: 6px; }
+  .btnOption:last-child {
+    margin-right: 0px; }
 
 #btnMenu {
   position: absolute;
@@ -348,6 +352,8 @@ label span {
   display: flex;
   justify-content: center;
   overflow: hidden; }
+  .block.darkMode {
+    border-width: 0px; }
   .block .blockArea {
     position: absolute;
     top: 0;
