@@ -10,8 +10,6 @@ const homeScreenHTML = `
     <button id="btnOptions" class="btn-type-a">Options</button>
 `;
 
-
-
 const all_blocks = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20];      // all possible blocks
 let remainingBlocks = [];                       // blocks to be placed
 let blockMap = [];                              // placement
@@ -30,7 +28,7 @@ let blockClicked = (event) => {
     selectedBlocks.push(blocksArr.indexOf(block));
     
     if(colorBlock){
-        event.target.parentNode.style.backgroundColor = "grey";         // shows blocks that have been selected
+        event.target.parentNode.style.backgroundColor = "#777";         // shows blocks that have been selected
     }
 
     if(selectedBlocks.length>=2){
@@ -50,6 +48,7 @@ let difficulty = 'normal';
 let colorBlock = true;
 let col = 2;
 let row = 1;
+let displayClass = `${difficulty}Mode`;    // easyMode normalMode hardMode; changes how blocks are displayed based on difficulty
 
 homeScreen();
 
@@ -74,11 +73,15 @@ function soundClick(){
 
 function homeScreen(){
 
+    // removeInGameClass(body);
+    removeElementClass(body, 'in-game');
+
     preferences();
     fadeIn(mainSection);
 
     scoreboard.innerHTML = `<h1>New Game Name</h1>`;
     scoreboard.classList = "";
+    mainContent.classList = "";
     mainContent.style.display = "flex";
     mainContent.style.flexDirection = "column";
     mainContent.style.justifyContent = "center";
@@ -206,7 +209,8 @@ function audioControl(event){
 
 function showOptions(){
     mainContent.innerHTML = ``;
-    mainContent.style.flexDirection = "column";
+    // mainContent.style.flexDirection = "column";
+    mainContent.classList = "show-options";
     scoreboard.innerHTML = `
         <h1>Options Menu</h1>
     `;
@@ -215,7 +219,7 @@ function showOptions(){
 
     let optionsPage = `
         <div class="row">
-            <table class="col-12">
+            <table class="">
                 <tbody style="text-align: center;">
                     <tr>
                         <td>Sound</td>
@@ -364,13 +368,18 @@ function changeMode(event){
     // console.log( 'Mode : '+btnClicked );
     if( btnClicked.innerText === 'Dark' ) {
         darkMode = true;
-        addDarkModeClass(mainSection);
-        addDarkModeClass(document.querySelector('body'));
+        // addDarkModeClass(mainSection);
+        // addElementClass(mainSection, 'darkMode');
+        // addDarkModeClass(document.querySelector('body'));
+        addElementClass(body, 'darkMode');
+
         btnOptionModeLight.classList.remove('clicked');
     } else if( btnClicked.innerText === 'Light' ) {
         darkMode = false;
-        removeDarkModeClass(mainSection);
-        removeDarkModeClass(document.querySelector('body'));
+        // removeDarkModeClass(mainSection);
+        // removeDarkModeClass(document.querySelector('body'));
+        removeElementClass(body, 'darkMode')
+
         btnOptionModeDark.classList.remove('clicked');
     }
     btnClicked.classList.add('clicked');
@@ -379,17 +388,45 @@ function changeMode(event){
     updateLocalStorage("preferences", "darkMode", darkMode);
 }
 
-function addDarkModeClass(element){
-    if(!element.classList.contains('darkMode')){
-        element.classList.add('darkMode');
-    }
+function addElementClass(element, ...classArr){
+    classArr.map( (className) => {
+        if( !element.classList.contains(className) ){
+            element.classList.add(className);
+        }
+    });
 }
 
-function removeDarkModeClass(element){
-    if(element.classList.contains('darkMode')){
-        element.classList.remove('darkMode');
-    }
+function removeElementClass(element, ...classArr){
+    classArr.map( (className) => {
+        if( element.classList.contains(className) ){
+            element.classList.remove(className);
+        }
+    });
 }
+
+// function addDarkModeClass(element){
+//     if(!element.classList.contains('darkMode')){
+//         element.classList.add('darkMode');
+//     }
+// }
+
+// function removeDarkModeClass(element){
+//     if(element.classList.contains('darkMode')){
+//         element.classList.remove('darkMode');
+//     }
+// }
+
+// function addInGameClass(element){
+//     if(!element.classList.contains('in-game')){
+//         element.classList.add('in-game');
+//     }
+// }
+
+// function removeInGameClass(element){
+//     if(element.classList.contains('in-game')){
+//         element.classList.remove('in-game');
+//     }
+// }
 
 function updateLocalStorage(key, prop, value){
     const object = JSON.parse( localStorage.getItem(key) );
@@ -428,10 +465,13 @@ function preferences(){
 
     if ( darkMode ) {
         // addDarkModeClass(mainSection);
-        addDarkModeClass(document.querySelector('body'));
+        // addDarkModeClass(document.querySelector('body'));
+        addElementClass(body, 'darkMode')
     } else {
         // removeDarkModeClass(mainSection);
-        removeDarkModeClass(document.querySelector('body'));
+        // removeDarkModeClass(document.querySelector('body'));
+        removeElementClass(body, 'darkMode')
+
     }
 
     setDifficulty();
@@ -448,11 +488,19 @@ function setDifficulty(){
         default:        row = 7;break;
     }
     // console.log('row: '+row);
+    displayClass = `${difficulty}Mode`;    // easyMode, normalMode, hardMode
 }
 
 function startGame(){
     mainContent.innerHTML = ``;
-    // mainContent.style.flexDirection = "row";    
+    // mainContent.classList += displayClass;
+    addElementClass(mainContent, 'in-game', displayClass);
+    addElementClass(body, 'in-game');
+    // addInGameClass(mainContent);
+    // addInGameClass(body);
+    // mainContent.style.flexDirection = "row";
+    // mainContent.style.alignContent = "flex-start";
+    // mainContent.style.justifyContent = "space-evenly";
     scoreboard.innerHTML = `
         <h1>Score: <span id="scoreCount"></span></h1>
         <h1>Try: <span id="tryCount"></span></h1>
@@ -479,6 +527,7 @@ function startGame(){
     addBlockEventListeners();
 
     addInGameMenu();
+    (darkMode)?addElementClass(btnMenu, 'darkMode'):'';
 }
 
 function addBlockEventListeners(){
@@ -665,26 +714,27 @@ function displayBlocks(){
     // mainSection.style.height = "auto"
     // mainContent.style.display = 'block';
 
-    let i = 0;
+    // let i = 0;
 
-    for (let r=0; r<row; r++) {
+    for (let r=0; r<row*col; r++) {
         let rowDisplay = ``;
-        rowDisplay += `
-            <div class="row"> 
-        `;
-        for (let c=0; c<col; c++) {
-            let block = blockMap[i];
+        // rowDisplay += `
+        //     <div class="row"> 
+        // `;
+        // for (let c=0; c<col; c++) {
+            let block = blockMap[r];
+                // <div class="block ${darkMode?'darkMode':''}">
             rowDisplay += `
-                <div class="block ${darkMode?'darkMode':''}">
+                <div class="block ${displayClass}">
                     <img class="face-img col-1" src="images/face-${block}.png" alt="">
                     <div class="blockArea"></div>
                 </div>
             `;
-            i++;
-        }
-        rowDisplay += `
-            </div> 
-        `;
+            // i++;
+        // }
+        // rowDisplay += `
+        //     </div> 
+        // `;
         mainContent.innerHTML += rowDisplay;
     }
 
@@ -726,8 +776,9 @@ function displayBlocks(){
 
 async function showHighScore(){
 
-    mainContent.style.display = "flex";
-    mainContent.style.flexDirection = "column";
+    mainContent.classList = "";
+    // mainContent.style.display = "flex";
+    // mainContent.style.flexDirection = "column";
     mainContent.style.justifyContent = "space-evenly";
 
     userLogin.innerHTML = ``;
@@ -1026,6 +1077,11 @@ function getPlayerName(){
     //get player name
     // mainContent.style.display = "flex";
     // mainContent.style.flexDirection = "column";
+    
+    mainContent.classList = "";
+    // removeInGameClass(mainContent);
+    // removeInGameClass(body);
+    removeElementClass(body, 'in-game');
 
     mainContent.innerHTML = `
     <form id="formPlayerData" onsubmit="event.preventDefault();">
@@ -1499,7 +1555,13 @@ async function loadGame(){
 
 function returnToGame() {
     
-    scoreboard.classList = "in-game-scoreboard";
+    // mainContent.classList = "in-game";
+    addElementClass(mainContent, 'in-game', displayClass);
+    addElementClass(body, 'in-game');
+    addElementClass(scoreboard, 'in-game-scoreboard');
+    // addInGameClass(mainContent);
+    // addInGameClass(body);
+    // scoreboard.classList = "in-game-scoreboard";
 
     //if( saveGameData.tries === 0 ) {
         // start new game
@@ -1523,12 +1585,18 @@ function returnToGame() {
         blocks = document.querySelectorAll(".block");
         blocksArr = Array.from(blocks);                   // or  arr = [...nodeList]
         blockMap = saveGameData.blockMap;
-        blockMap = [];
-        saveGameData.blockMap.forEach(block=>{blockMap.push(block);});
+        // blockMap = [];
+        // saveGameData.blockMap.forEach(block=>{blockMap.push(block);});
         //console.log(blocks)
+        if( blocks[0].classList.contains("easyMode") ){
+            removeElementClass(mainContent, 'normalMode', 'hardMode');
+            addElementClass(mainContent, 'in-game', 'easyMode');
+        }
         addBlockEventListeners();
 
         addInGameMenu();
+        (darkMode)?addElementClass(btnMenu, 'darkMode'):'';
+
 
         // alert('game data loaded');
         // console.log(blockMap);

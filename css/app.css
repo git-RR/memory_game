@@ -125,10 +125,10 @@ label span {
     padding: 10px 0; }
 
 #mainSection {
-  height: 100%;
   width: 100%;
   transition: 1000ms ease-in-out;
-  opacity: 0; }
+  opacity: 0;
+  overflow-x: hidden; }
 
 #mainContent {
   padding: 1rem 0;
@@ -139,12 +139,31 @@ label span {
   justify-content: center;
   align-items: center;
   flex-wrap: wrap; }
+  #mainContent.in-game {
+    flex-direction: row !important;
+    align-content: flex-start !important;
+    justify-content: space-evenly !important;
+    height: auto; }
+  #mainContent.show-options {
+    justify-content: space-around !important; }
+  #mainContent.easyMode {
+    padding-top: 6rem; }
+  #mainContent table {
+    width: min(100%, 600px); }
 
 #userLogin {
   display: block;
   position: absolute;
   bottom: 10px; }
 
+@media (min-width: 600px) {
+  #mainContent.easyMode {
+    padding: 0rem 0;
+    width: 52%; }
+  #mainContent.normalMode {
+    width: 76%; }
+  #mainContent.hardMode {
+    width: 100%; } }
 #scoreboard {
   display: flex;
   flex-wrap: wrap;
@@ -153,14 +172,15 @@ label span {
   #scoreboard #scoreCount {
     margin-right: 2em; }
   #scoreboard.in-game-scoreboard {
-    justify-content: flex-start;
-    margin-left: 10%; }
+    justify-content: space-around; }
+    #scoreboard.in-game-scoreboard h1:nth-of-type(2) {
+      margin-left: -22%; }
 
 @media (min-width: 600px) {
   #scoreboard {
     justify-content: center; }
     #scoreboard.in-game-scoreboard {
-      justify-content: center;
+      justify-content: space-around;
       margin-left: 0; } }
 .row {
   display: flex;
@@ -306,15 +326,17 @@ label span {
     margin-right: 0px; }
 
 #btnMenu {
-  position: absolute;
-  top: 2.2rem;
-  right: 1.2rem;
+  position: relative;
+  margin: 2rem 0;
   /* down arrow */
-  /* other */
-  width: 2rem;
-  height: 2rem;
-  background: repeating-radial-gradient(#222 0, #222 20%, white 20%, white 40%);
-  border: 2px solid transparent; }
+  border-top: 40px solid grey;
+  border-bottom: 0;
+  border-left: 30px solid white;
+  border-right: 30px solid white;
+  /* other */ }
+  #btnMenu.darkMode {
+    border-left: 30px solid #222;
+    border-right: 30px solid #222; }
 
 #main-nav {
   display: flex;
@@ -344,16 +366,14 @@ label span {
   -webkit-box-shadow: 0 0 10px #fff;
   -moz-box-shadow: 0 0 10px #fff;
   box-shadow: 0 0 10px #fff;
-  border: 2px solid #333;
+  border: 2px solid #777;
   position: relative;
   width: 22%;
   padding: 10px;
-  margin-bottom: 15px;
+  margin-bottom: 4%;
   display: flex;
   justify-content: center;
   overflow: hidden; }
-  .block.darkMode {
-    border-width: 0px; }
   .block .blockArea {
     position: absolute;
     top: 0;
@@ -363,6 +383,15 @@ label span {
     background: transparent;
     border-radius: 50px; }
 
+@media (min-width: 600px) {
+  .block {
+    margin: 0.6% 0.4%; }
+    .block.easyMode {
+      width: 20%; }
+    .block.normalMode {
+      width: 12%; }
+    .block.hardMode {
+      width: 9%; } }
 .menu {
   position: absolute;
   top: 0;
