@@ -46,6 +46,7 @@ let playAudio = true;
 let darkMode = false;
 let difficulty = 'normal';
 let colorBlock = true;
+let fullscreenMode = true;
 let col = 2;
 let row = 1;
 let displayClass = `${difficulty}Mode`;    // easyMode normalMode hardMode; changes how blocks are displayed based on difficulty
@@ -222,42 +223,105 @@ function showOptions(){
             <table class="">
                 <tbody style="text-align: center;">
                     <tr>
-                        <td>Sound</td>
+                        <td>Sound 
+                            <div class="tooltip ${(darkMode)?'darkMode':''}">
+                                i
+                                <span class="tooltip-text">
+                                    Click 'Play' to enable background music and sound effects during gameplay.<br>
+                                    'Mute' disables all audio.
+                                </span>
+                            </div>
+                        </td>
                         <td>
                             <button id="btnOptionSoundPlay" class="btnOption ${(playAudio)?'clicked':''}">Play</button>
                             <button id="btnOptionSoundMute" class="btnOption ${(playAudio)?'':'clicked'}">Mute</button>
                         </td>
                     </tr>
                     <tr>
-                        <td>Display Mode</td>
+                        <td>Display Mode
+                            <div class="tooltip">
+                                i
+                                <span class="tooltip-text">
+                                    'Dark' changes to dark theme, for gameplay in low-light environments.<br>
+                                    'Light' is a brighter theme, with a white background.
+                                </span>
+                            </div>
+                        </td>
                         <td>
                             <button id="btnOptionModeDark" class="btnOption ${(darkMode)?'clicked':''}">Dark</button>
                             <button id="btnOptionModeLight" class="btnOption ${(darkMode)?'':'clicked'}">Light</button>
                         </td>
                     </tr>
                     <tr>
-                        <td>Difficulty</td>
+                        <td>Difficulty
+                            <div class="tooltip">
+                                i
+                                <span class="tooltip-text">
+                                    Options here affect the scoring system and change the number of blocks to be matched.<br>
+                                    'Easy' has the fewest blocks and 'Hard', the most.
+                                </span>
+                            </div>
+                        </td>
                         <td>
                             <button id="btnOptionDifficultyEasy" class="btnOption ${(difficulty==='easy')?'clicked':''}">Easy</button>
                             <button id="btnOptionDifficultyNormal" class="btnOption ${(difficulty==='normal')?'clicked':''}">Med</button>
                             <button id="btnOptionDifficultyHard" class="btnOption ${(difficulty==='hard')?'clicked':''}">Hard</button>
                         </td>
                     </tr>
+                    ${(document.fullscreenEnabled)?`
+                            <tr>
+                            <td>Fullscreen
+                                <div class="tooltip">
+                                    i
+                                    <span class="tooltip-text">
+                                        Game automatically enters fullscreen by default. Change setting here to prevent going into fullscreen mode.
+                                    </span>
+                                </div>
+                            </td>
+                            <td>
+                                <button id="btnOptionFullscreenOn" class="btnOption ${(fullscreenMode)?'clicked':''}">On</button>
+                                <button id="btnOptionFullscreenOff" class="btnOption ${(fullscreenMode)?'':'clicked'}">Off</button>
+                            </td>
+                        </tr>
+                    `:``}
                     <tr>
-                        <td>Color Turned Blocks</td>
+                        <td>Color Turned Blocks
+                            <div class="tooltip">
+                                i
+                                <span class="tooltip-text">
+                                    An assistive feature that, when enabled, shows the blocks that have already been seen.<br>
+                                    It's helpful for memorization and enabled by clicking 'Yes'.
+                                </span>
+                            </div>
+                        </td>
                         <td>
                             <button id="btnOptionColorTurnedBlocksYes" class="btnOption ${(colorBlock)?'clicked':''}">Yes</button>
                             <button id="btnOptionColorTurnedBlocksNo" class="btnOption ${(colorBlock)?'':'clicked'}">No</button>
                         </td>
                     </tr>
                     <tr>
-                        <td>Local Save Data</td>
+                        <td>Local Save Data
+                            <div class="tooltip">
+                                i
+                                <span class="tooltip-text">
+                                    Game data is saved locally and to the cloud (when playing online). To clear the local data click 'Clear All'.<br>
+                                    Your preferences will not be cleared.
+                                </span>
+                            </div>
+                        </td>
                         <td>
                             <button id="btnOptionClearData" class="btnOption">Clear All</button>
                         </td>
                     </tr>
                     <tr>
-                        <td>More Info.</td>
+                        <td>More Info.
+                            <div class="tooltip">
+                                i
+                                <span class="tooltip-text">
+                                    Click 'Help' to read Instructions, Game Features and Credits.
+                                </span>
+                            </div>
+                        </td>
                         <td>
                             <button id="btnOptionMoreInfo" class="btnOption">Help</button>
                         </td>
@@ -288,6 +352,10 @@ function showOptions(){
     btnOptionSoundMute.addEventListener('click', audioControl);
     btnOptionColorTurnedBlocksYes.addEventListener('click', colorTurnedBlock);
     btnOptionColorTurnedBlocksNo.addEventListener('click', colorTurnedBlock);
+    if(document.fullscreenEnabled){
+        btnOptionFullscreenOn.addEventListener('click', setFullscreenPref);
+        btnOptionFullscreenOff.addEventListener('click', setFullscreenPref);
+    }
 }
 
 function showHelp(){
@@ -329,6 +397,34 @@ function clearLocalSaveGameData(){
     btnOptionClearData.classList.add('clicked');
 }
 
+function setFullscreenPref(event){
+    const btnClicked = event.target;
+    if( btnClicked.innerText === 'On' ) {
+        fullscreenMode = true;
+        btnOptionFullscreenOff.classList.remove('clicked');
+    } else if( btnClicked.innerText === 'Off' ) {
+        fullscreenMode = false;
+        btnOptionFullscreenOn.classList.remove('clicked');
+    }
+    btnClicked.classList.add('clicked');
+    updateLocalStorage("preferences", "fullscreenMode", fullscreenMode);
+
+    if( document.fullscreenElement === body ){
+        // currently displaying fullscreen
+        if( !fullscreenMode ){
+            document.exitFullscreen();
+        }
+    }else{
+        // not currently displaying fullscreen
+        if( fullscreenMode ){
+            body.requestFullscreen()
+                .then(()=>{ console.log('fullscreen mode'); })
+                .catch((err)=>{ console.log(err); });
+        }
+    }
+
+}
+
 function colorTurnedBlock(event){
     const btnClicked = event.target;
     if( btnClicked.innerText === 'Yes' ) {
@@ -366,6 +462,8 @@ function changeDifficulty(event){
 function changeMode(event){
     const btnClicked = event.target;
     // console.log( 'Mode : '+btnClicked );
+    const tooltips = document.querySelectorAll('.tooltip');
+
     if( btnClicked.innerText === 'Dark' ) {
         darkMode = true;
         // addDarkModeClass(mainSection);
@@ -378,7 +476,8 @@ function changeMode(event){
         darkMode = false;
         // removeDarkModeClass(mainSection);
         // removeDarkModeClass(document.querySelector('body'));
-        removeElementClass(body, 'darkMode')
+        removeElementClass(body, 'darkMode');
+        // removeElementClass(mainSection, 'darkMode');
 
         btnOptionModeDark.classList.remove('clicked');
     }
@@ -386,6 +485,11 @@ function changeMode(event){
     // console.log(btnClicked.classList)
     // localStorage.setItem( "preferences", JSON.stringify( { darkMode : darkMode } ) );
     updateLocalStorage("preferences", "darkMode", darkMode);
+
+    tooltips.forEach((tooltip)=>{
+        (darkMode)? addElementClass(tooltip, 'darkMode') : removeElementClass(tooltip, 'darkMode');
+    });
+
 }
 
 function addElementClass(element, ...classArr){
@@ -453,6 +557,7 @@ function preferences(){
             darkMode : false,
             difficulty: 'normal',
             colorBlock: true,
+            fullscreenMode: true,
         } ) );
 
     } else {
@@ -461,16 +566,19 @@ function preferences(){
         darkMode = preferences.darkMode;
         difficulty = preferences.difficulty;
         colorBlock = preferences.colorBlock;
+        fullscreenMode = preferences.fullscreenMode;
     }
 
     if ( darkMode ) {
         // addDarkModeClass(mainSection);
         // addDarkModeClass(document.querySelector('body'));
-        addElementClass(body, 'darkMode')
+        addElementClass(body, 'darkMode');
+        // addElementClass(mainSection, 'darkMode');
     } else {
         // removeDarkModeClass(mainSection);
         // removeDarkModeClass(document.querySelector('body'));
-        removeElementClass(body, 'darkMode')
+        removeElementClass(body, 'darkMode');
+        // removeElementClass(mainSection, 'darkMode');
 
     }
 
@@ -492,6 +600,11 @@ function setDifficulty(){
 }
 
 function startGame(){
+    if( fullscreenMode && document.fullscreenEnabled && !document.fullscreenElement ){
+        body.requestFullscreen()
+            .then(()=>{ console.log('fullscreen mode'); })
+            .catch((err)=>{ console.log(err); });
+    }
     mainContent.innerHTML = ``;
     // mainContent.classList += displayClass;
     addElementClass(mainContent, 'in-game', displayClass);
@@ -1555,6 +1668,12 @@ async function loadGame(){
 
 function returnToGame() {
     
+    if( fullscreenMode && document.fullscreenEnabled && !document.fullscreenElement ){
+        body.requestFullscreen()
+            .then(()=>{ console.log('fullscreen mode'); })
+            .catch((err)=>{ console.log(err); });
+    }
+
     // mainContent.classList = "in-game";
     addElementClass(mainContent, 'in-game', displayClass);
     addElementClass(body, 'in-game');

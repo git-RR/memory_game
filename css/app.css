@@ -35,9 +35,18 @@ body {
   height: 100vh;
   overflow-x: hidden;
   font-family: Helvetica, Arial, sans-serif;
-  transition: 1000ms ease-in-out; }
+  transition: 1000ms ease-in-out;
+  /*Safari */ }
+  body:not(:root):fullscreen::backdrop {
+    background: #fff !important; }
+  body.darkMode:not(:root):fullscreen::backdrop {
+    background: #222 !important; }
+  body:not(:root):-webkit-full-screen {
+    background: #fff !important; }
+  body.darkMode:not(:root):-webkit-full-screen {
+    background: #222 !important; }
   body.darkMode {
-    background-color: #222;
+    background-color: #222 !important;
     color: #fff; }
 
 h1 {
@@ -129,6 +138,8 @@ label span {
   transition: 1000ms ease-in-out;
   opacity: 0;
   overflow-x: hidden; }
+  #mainSection.darkMode {
+    color: #fff; }
 
 #mainContent {
   padding: 1rem 0;
@@ -441,5 +452,40 @@ label span {
     opacity: 0; }
   100% {
     opacity: 1; } }
+.tooltip {
+  display: inline-block;
+  border: 1px solid black;
+  border-radius: 50%;
+  position: relative;
+  padding: 0 7px;
+  font-weight: 600;
+  font-size: 1rem;
+  font-family: ui-sans-serif; }
+  .tooltip.darkMode {
+    border-color: white; }
+  .tooltip .tooltip-text {
+    visibility: hidden;
+    position: absolute;
+    left: 38px;
+    top: -32px;
+    z-index: 1;
+    background-color: black;
+    width: 160px;
+    padding: 10px;
+    border-radius: 5px;
+    font-family: sans-serif;
+    font-weight: 300;
+    color: white;
+    line-height: 1.3rem; }
+    .tooltip .tooltip-text::after {
+      content: " ";
+      position: absolute;
+      right: 100%;
+      top: 30px;
+      border-width: 10px;
+      border-style: solid;
+      border-color: transparent black transparent transparent; }
+  .tooltip:hover .tooltip-text {
+    visibility: visible; }
 
 /*# sourceMappingURL=app.css.map */
