@@ -15,8 +15,9 @@ let remainingBlocks = [];                       // blocks to be placed
 let blockMap = [];                              // placement
 let selectedBlocks = [];                        // two blocks chosen
 let scoreValue = 0;                             // player's score
-const scorePoint = 2;                           // value added to score on each correct move
+let scorePoint = 2;                             // value added to score on each correct move
 let tryValue = 0;                               // number of attempts; to be used in score calc
+let prevScoreTry = 0;                           // attempt number of last score change
 let blocks = null;                              // array of block nodes
 let blocksArr = null;                           
 //let endOfGameFlag = false;
@@ -24,7 +25,7 @@ let blockClicked = (event) => {
     const block = event.target.parentNode;
     block.removeEventListener('click', blockClicked);   // same block cannot be selected more than once
     block.children[0].style.opacity = '1';
-    console.log(blocksArr.indexOf(block));
+    // console.log(blocksArr.indexOf(block));
     selectedBlocks.push(blocksArr.indexOf(block));
     
     if(colorBlock){
@@ -623,8 +624,11 @@ function startGame(){
 
     //const scoreCount = document.getElementById("scoreCount");
     //const tryCount = document.getElementById("tryCount");
-    scoreValue = 0;
-    tryValue = 0;
+    
+    // scoreValue = 0;
+    // tryValue = 0;
+
+    setScoringSystem();
 
     selectedBlocks = [];                                // reset selection
     
@@ -674,15 +678,19 @@ function checkIfBlocksMatch(){
         block1.classList += " found";                   // add class to keep blocks visible
         block2.classList += " found";
         
-        scoreValue += scorePoint;
-        scoreCount.innerText = scoreValue;
-        console.log(`Score: ${scoreValue}`);
+        updateScore();
+        // scoreValue += scorePoint;
+        // scoreCount.innerText = scoreValue;
+        // console.log(`Score: ${scoreValue}`);
 
         if(document.querySelectorAll(".block.found").length===row*col){              // end of game
             console.log('Well Done!');
             scoreCount.style.color = "red";
             tryCount.style.color = "red";
             //endOfGameFlag = true;
+
+            calculateFinalScore();
+            
             endGame();
         }
     }else{
@@ -1695,6 +1703,10 @@ function returnToGame() {
             <h1>Try: <span id="tryCount"></span></h1>
         `;
 
+        difficulty = saveGameData.difficulty;
+
+        setScoringSystem();
+
         scoreValue = saveGameData.score;
         tryValue = saveGameData.tries;
         
@@ -1744,6 +1756,7 @@ function prepareSaveGame() {
     saveGameData.game       = mainContent.innerHTML;
     saveGameData.score      = parseInt(scoreCount.innerText);
     saveGameData.tries      = parseInt(tryCount.innerText);
+    saveGameData.difficulty = difficulty;
     // console.log(blockMap);
     // console.log(saveGameData.blockMap);
     saveGameData.blockMap = [];
@@ -2044,3 +2057,91 @@ function showUserFeedback(){
     mainContent.innerHTML += userFeedback;
 }
 
+function setScoringSystem(){
+    scoreValue = 0;
+    tryValue = 0;
+    prevScoreTry = -1;
+
+    switch(difficulty){
+        case 'easy':    scorePoint = 10; break;
+        case 'normal':  scorePoint = 20; break;
+        case 'hard':    scorePoint = 30; break;
+        default:        scorePoint = 20; 
+    }
+}
+
+function updateScore(){
+    const bonusPoint = 5;
+    if( tryValue - prevScoreTry === 1 ){ // player scored on prev turn
+        // chain bonus ++
+        scoreValue += bonusPoint; // add bonus point
+        console.log(`chain score bonus point: ${bonusPoint}`);
+    }
+
+    scoreValue += scorePoint;
+    console.log('new score: '+scoreValue);
+
+    prevScoreTry = tryValue;
+
+    scoreCount.innerText = scoreValue;
+}
+
+function calculateFinalScore(){
+    // calc final score based on number of attempts
+    const numOfBlocks = row*col;
+    const numOfBlockPairs = row*col/2;
+    const bonusPoint = 5;
+    const maxScore = (scorePoint * numOfBlockPairs) + ( bonusPoint * (numOfBlockPairs-1) )
+    // maxScore = (points from matching all blocks of chosen difficulty) + (max bonus points)
+
+    console.log('blocks : '+numOfBlocks);
+    console.log('attempts : '+tryValue);
+
+
+    if( tryValue < numOfBlockPairs ){
+        // Error case: not possible under correct operation
+        scoreValue = 0;
+        console.log('error: game terminated prematurely.')
+        return;
+    }
+
+    if( scoreValue > maxScore || scoreValue < 0 ){
+        // Error case: unreachable scores
+        scoreValue = 0;
+        console.log('error: scoring system failure #1')
+        return;
+    }
+
+    if( tryValue <= numOfBlocks ){
+        // some blocks were seen twice or more, but not all blocks
+        // no penalty
+        // scoreValue = Math.ceil(scoreValue*1)
+        console.log("FINAL SCORE : "+scoreValue);
+        console.log('no penalty')
+        return;
+    }
+    
+    if( tryValue > numOfBlocks && tryValue <= (numOfBlocks * 1.5) ){
+        // blocks were seen more than twice
+        scoreValue = Math.ceil(scoreValue*0.90);
+        console.log("FINAL SCORE : "+scoreValue);
+        console.log('penalty #1')
+        return;
+    }
+
+    if( tryValue > (numOfBlocks*1.5) && tryValue <= ( numOfBlocks * 2 )){
+        scoreValue = Math.ceil(scoreValue*0.80);
+        console.log("FINAL SCORE : "+scoreValue);
+        console.log('penalty #2')
+        return;
+    }
+
+    if( tryValue > ( numOfBlocks * 2 ) ){
+        scoreValue = Math.ceil(scoreValue*0.70);
+        console.log("FINAL SCORE : "+scoreValue);
+        console.log('penalty #3')
+        return;
+    }
+
+    console.log('error: scoring system failure #2');
+}
