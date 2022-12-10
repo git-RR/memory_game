@@ -1768,9 +1768,11 @@ async function saveGame() {
     // mainContent.innerHTML += userFeedback;
 
     saveGameData.playerName = userDetails.playerName;
-
+    
     saveGameLocal();
 
+    saveGameData.passphrase = userDetails.passphrase;       // sent for auth.
+    
     const message_text = document.getElementById('message_text');
 
     message_text.innerText = `saving...`;
@@ -1821,6 +1823,11 @@ async function saveGame() {
         message_text.classList = '';
         // scoreboard.innerHTML = `<h1 class="">Game Saved!</h1>`;
     }
+
+    delete saveGameData.passphrase; // remove to prevent save with game data
+
+    console.log('AFTER SAVE: CHECK NO PWD');
+    console.log(saveGameData);
 
     // setTimeout( () => {
     //     returnToGame();
@@ -2001,6 +2008,8 @@ async function playerProfile() {
             return null;
         }
         
+        userDetails.passphrase = json.passphrase; //encrypted version of passphrase
+
         localStorage.setItem("localUserDetails", JSON.stringify(userDetails));
     } else {
         // not connected - only save local

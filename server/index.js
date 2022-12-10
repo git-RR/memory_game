@@ -42,7 +42,7 @@ app.post("/api/highscore", async (request, response)=>{
 
     if( userCred !== null ){
         // user found
-        if( userCred.passphrase === data.passphrase ){
+        if( userCred.passphrase === decrypt(data.passphrase) ){
             // match
             await addNewHighScore(client, newHighScore);
             await deleteOldHighScore(client, deleteId);
@@ -115,9 +115,10 @@ async function main(){
         //const result_delete2 = await client.db(DATABASE).collection(COLLECTION_USER_CREDS).deleteMany({});
         //console.log(result_delete2);
 
+        // clearAllSaveGameData(client);
 
 
-        //await getAllSaveGameData(client);
+        await getAllSaveGameData(client);
 
         // const result = await updateSaveGameData(client, { playerName : 'play1'}, 	{$set:{
         //     date        : '11/11/23',
@@ -164,7 +165,9 @@ app.get('/api/save-game', async (request, response)=>{
  
     const player_name_query = request.query.playerName;
     // const load_game_query = parseInt(request.query.loadGame);
-    const identifier_query = request.query.identifier;  // passphrase
+    // const identifier_query = request.query.identifier;  // passphrase
+    const identifier_query = decrypt(request.query.identifier);      //  decrypt here
+
 
     // cloud db
     const client = await main();
@@ -305,8 +308,17 @@ app.post("/api/save-game", async (request, response)=>{
 
     // cloud db
     const client = await main();
+    const userCred = await getUserCred( client, newSaveGame.playerName );
 
-    await addNewSaveGameData(client, newSaveGame); // is await necessary?
+    if( userCred.passphrase === decrypt(data.passphrase) ){
+        // auth successful
+        await addNewSaveGameData(client, newSaveGame);
+        response.json({data: 'game saved!'});
+    }else{
+        console.log('Auth Failed @ post save game');
+    }
+
+
     // await addNewUser(client, newUserCred); // removed since create user is handled by .post(user-cred)
 
     /* get result to check if this succeeded? */
@@ -333,16 +345,14 @@ app.post("/api/save-game", async (request, response)=>{
 
     // console.log('dummy DB: ')
     // console.log(test_save_game)
-    response.json({data: 'game saved!'});
+    // response.json({data: 'game saved!'});
     /* end test code */
 });
 
 app.put("/api/save-game", async (request, response)=>{
     const data = request.body;
 
-    const client = await main();
-
-   const updatedSaveData = {
+    const updatedSaveData = {
         $set:{
             date : data.date,
             game : data.game,
@@ -350,23 +360,33 @@ app.put("/api/save-game", async (request, response)=>{
             tries : data.tries,
             blockMap : data.blockMap,
         }
-   }
-
-    const result = await updateSaveGameData( client, { playerName : data.playerName }, updatedSaveData );
-    // response.json({data: 'save game updated.'});
+    }
     
-    /* check if this fails and send back error code. */
+    const client = await main();
+    const userCred = await getUserCred( client, data.playerName );
 
-    if( result.matchedCount || result.modifiedCount ) {
-        response.json({data: 07, message: 'Update Succeeded.' });
-    } else {
-        response.json({data: 06, message: 'Update Failed.' });
+    if( userCred.passphrase === decrypt(data.passphrase) ){
+        // auth successful
+        const result = await updateSaveGameData( client, { playerName : data.playerName }, updatedSaveData );
+        // response.json({data: 'save game updated.'});
+        
+        /* check if this fails and send back error code. */
+
+        if( result.matchedCount || result.modifiedCount ) {
+            response.json({data: 07, message: 'Update Succeeded.' });
+        } else {
+            response.json({data: 06, message: 'Update Failed.' });
+        }
+
+        console.log('Matched Count : ');
+        console.log(result.matchedCount);
+        console.log('Modified Count : ');
+        console.log(result.modifiedCount);
+    }else{
+        console.log('Auth Failed @ put save game');
     }
 
-    console.log('Matched Count : ');
-    console.log(result.matchedCount);
-    console.log('Modified Count : ');
-    console.log(result.modifiedCount);
+    
 
     // if( result === null ){
     //     response.json({data: 06, message: 'Update Failed.' });
@@ -430,7 +450,7 @@ app.post("/api/user-cred", async (request, response)=>{
 
     const newUserCred = {
         playerName: data.playerName,
-        passphrase: data.passphrase,
+        passphrase: data.passphrase,  // do not decrypt here; passphrase may come from form
     };
 
     const loginFlag = (data.login);
@@ -457,17 +477,29 @@ app.post("/api/user-cred", async (request, response)=>{
             // trying to create new user
             await addNewUser(client, newUserCred);
             console.log('New User Created.')
-            response.json({data: 02, status:'New User Created.'});
+            response.json({
+                data: 02, 
+                status:'New User Created.', 
+                passphrase: encrypt(newUserCred.passphrase),        // send encrypted version here
+            });
+            console.log('Encrypted Pwd : '+encrypt(newUserCred.passphrase))
         }
     } else {
         // found
         if( loginFlag ) {
             // trying to log in
             
+            // newUserCred.passphrase = decrypt(newUserCred.passphrase);       // dont decrypt before check; input from user
+
             if( userCred.passphrase === newUserCred.passphrase ){
                 // passphrase match
                 console.log('Login Succeeded.');
-                response.json({data: 03, status:'Login Succeeded.'});
+                response.json({
+                    data: 03, 
+                    status:'Login Succeeded.',
+                    passphrase: encrypt(newUserCred.passphrase),        // send encrypted version here
+                });
+                console.log('Encrypted Pwd : '+encrypt(newUserCred.passphrase))
             } else {
                 // passphrase mismatch
                 console.log('Login Failed. Check Passphrase.');
@@ -528,6 +560,15 @@ async function getUserCred(client, player_name){
     return result;
 }
 
+/* ENCRYPTION */
+
+function encrypt(pwd){
+    return `xxxx${pwd}xxxx`;
+}
+
+function decrypt(pwd){
+    return pwd.substr(4, pwd.length-8);
+}
 
 // end SAVE GAME
 
