@@ -563,11 +563,37 @@ async function getUserCred(client, player_name){
 /* ENCRYPTION */
 
 function encrypt(pwd){
-    return `xxxx${pwd}xxxx`;
+    // pwd is unencrypted
+    // length : 3-16 char's
+    // encrypted pwd length = 20 char's
+    const maxLen = 20;
+    //const charSet = "lwZ9M{)@n0(f2tbX>!/Lp<CK*]$.?,3_VNcRB#%}qvJgx4&mGH-eju6[S;7ar5D=oAy^YFT8Ukd+WzEOsihPQI";
+    const charSet = "lwZ9Mn0f2tbXLpCK3VNcRBqvJgx4mGHeju6S7ar5DoAyYFT8UkdWzEOsihPQI";
+
+    let randomIndex = Math.floor(Math.random() * (charSet.length));
+
+    let encryptedPwd = pwd;
+
+    for (let i = 0; i < 2; i++) {
+        randomIndex = Math.floor(Math.random() * (charSet.length));
+        encryptedPwd = charSet[randomIndex] + encryptedPwd;  
+    }
+    for (let i = 0; i < 2; i++) {
+        randomIndex = Math.floor(Math.random() * (charSet.length));
+        encryptedPwd += charSet[randomIndex];  
+    }
+
+    while( encryptedPwd.length<20 ){
+        randomIndex = Math.floor(Math.random() * (charSet.length));
+        encryptedPwd += charSet[randomIndex];
+    }
+
+    return encryptedPwd;
 }
 
-function decrypt(pwd){
-    return pwd.substr(4, pwd.length-8);
+function decrypt(encryptedPwd, pwdLength){
+    let decryptedPwd = encryptedPwd.substr(2, pwdLength);
+    return decryptedPwd;
 }
 
 // end SAVE GAME
