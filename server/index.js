@@ -42,7 +42,7 @@ app.post("/api/highscore", async (request, response)=>{
 
     if( userCred !== null ){
         // user found
-        if( userCred.passphrase === decrypt(data.passphrase) ){
+        if( userCred.passphrase === decrypt(data.passphrase, userCred.passphrase.length, userCred.encryptionKey) ){
             // match
             await addNewHighScore(client, newHighScore);
             await deleteOldHighScore(client, deleteId);
@@ -166,14 +166,14 @@ app.get('/api/save-game', async (request, response)=>{
     const player_name_query = request.query.playerName;
     // const load_game_query = parseInt(request.query.loadGame);
     // const identifier_query = request.query.identifier;  // passphrase
-    const identifier_query = decrypt(request.query.identifier);      //  decrypt here
+    // const identifier_query = decrypt(request.query.identifier);      //  decrypt here
 
 
     // cloud db
     const client = await main();
     const userCred = await getUserCred( client, player_name_query );
 
-    if( userCred.passphrase === identifier_query ){
+    if( userCred.passphrase === decrypt(request.query.identifier, userCred.passphrase.length, userCred.encryptionKey) ){
         // auth successful
         const game_data = await getSaveGameData(client, player_name_query);
         if( game_data === null ){
@@ -310,7 +310,7 @@ app.post("/api/save-game", async (request, response)=>{
     const client = await main();
     const userCred = await getUserCred( client, newSaveGame.playerName );
 
-    if( userCred.passphrase === decrypt(data.passphrase) ){
+    if( userCred.passphrase === decrypt(data.passphrase, userCred.passphrase.length, userCred.encryptionKey) ){
         // auth successful
         await addNewSaveGameData(client, newSaveGame);
         response.json({data: 'game saved!'});
@@ -365,7 +365,7 @@ app.put("/api/save-game", async (request, response)=>{
     const client = await main();
     const userCred = await getUserCred( client, data.playerName );
 
-    if( userCred.passphrase === decrypt(data.passphrase) ){
+    if( userCred.passphrase === decrypt(data.passphrase, userCred.passphrase.length, userCred.encryptionKey) ){
         // auth successful
         const result = await updateSaveGameData( client, { playerName : data.playerName }, updatedSaveData );
         // response.json({data: 'save game updated.'});
@@ -448,9 +448,13 @@ app.put("/api/save-game", async (request, response)=>{
 app.post("/api/user-cred", async (request, response)=>{
     const data = request.body;
 
+    // const encryptionKey = Math.floor(Math.random() * 61 + 1);
+    const encryptionKey = Math.floor(Math.random() * (61 + 61 + 1)) - 61; //(max - min + 1)) + min
+
     const newUserCred = {
         playerName: data.playerName,
         passphrase: data.passphrase,  // do not decrypt here; passphrase may come from form
+        encryptionKey : encryptionKey,
     };
 
     const loginFlag = (data.login);
@@ -480,9 +484,9 @@ app.post("/api/user-cred", async (request, response)=>{
             response.json({
                 data: 02, 
                 status:'New User Created.', 
-                passphrase: encrypt(newUserCred.passphrase),        // send encrypted version here
+                passphrase: encrypt(newUserCred.passphrase, newUserCred.encryptionKey),        // send encrypted version here
             });
-            console.log('Encrypted Pwd : '+encrypt(newUserCred.passphrase))
+            console.log('Encrypted Pwd : '+encrypt(newUserCred.passphrase, newUserCred.encryptionKey))
         }
     } else {
         // found
@@ -497,9 +501,9 @@ app.post("/api/user-cred", async (request, response)=>{
                 response.json({
                     data: 03, 
                     status:'Login Succeeded.',
-                    passphrase: encrypt(newUserCred.passphrase),        // send encrypted version here
+                    passphrase: encrypt(userCred.passphrase, userCred.encryptionKey),        // send encrypted version here
                 });
-                console.log('Encrypted Pwd : '+encrypt(newUserCred.passphrase))
+                console.log('Encrypted Pwd : '+encrypt(userCred.passphrase, userCred.encryptionKey))
             } else {
                 // passphrase mismatch
                 console.log('Login Failed. Check Passphrase.');
@@ -562,37 +566,93 @@ async function getUserCred(client, player_name){
 
 /* ENCRYPTION */
 
-function encrypt(pwd){
+function encrypt(pwd, encryptionKey){
     // pwd is unencrypted
     // length : 3-16 char's
     // encrypted pwd length = 20 char's
     const maxLen = 20;
-    //const charSet = "lwZ9M{)@n0(f2tbX>!/Lp<CK*]$.?,3_VNcRB#%}qvJgx4&mGH-eju6[S;7ar5D=oAy^YFT8Ukd+WzEOsihPQI";
-    const charSet = "lwZ9Mn0f2tbXLpCK3VNcRBqvJgx4mGHeju6S7ar5DoAyYFT8UkdWzEOsihPQI";
+    //const chars = "lwZ9M{)@n0(f2tbX>!/Lp<CK*]$.?,3_VNcRB#%}qvJgx4&mGH-eju6[S;7ar5D=oAy^YFT8Ukd+WzEOsihPQI";
+    const chars = "lwZ9Mn0f2tbXLpCK3VNcRBqvJgx4mGHeju6S7ar5DoAyYFT8UkdWzEOsihPQ1I";
 
-    let randomIndex = Math.floor(Math.random() * (charSet.length));
+    let randomIndex = Math.floor(Math.random() * (chars.length));
 
     let encryptedPwd = pwd;
 
+    // add two char's to start of pwd
     for (let i = 0; i < 2; i++) {
-        randomIndex = Math.floor(Math.random() * (charSet.length));
-        encryptedPwd = charSet[randomIndex] + encryptedPwd;  
+        randomIndex = Math.floor(Math.random() * (chars.length));
+        encryptedPwd = chars[randomIndex] + encryptedPwd;  
     }
+    // add two char's to end of pwd
     for (let i = 0; i < 2; i++) {
-        randomIndex = Math.floor(Math.random() * (charSet.length));
-        encryptedPwd += charSet[randomIndex];  
+        randomIndex = Math.floor(Math.random() * (chars.length));
+        encryptedPwd += chars[randomIndex];  
     }
 
+    // keep adding until pwd is 20 char's long
+
     while( encryptedPwd.length<20 ){
-        randomIndex = Math.floor(Math.random() * (charSet.length));
-        encryptedPwd += charSet[randomIndex];
+        randomIndex = Math.floor(Math.random() * (chars.length));
+        encryptedPwd += chars[randomIndex];
+    }
+
+    const encryptArr = [...encryptedPwd];
+
+    let index = 0;
+    // substitution cypher
+    for(let j = 0; j < maxLen; j++){
+        index = chars.indexOf(encryptArr[j]);
+        index += encryptionKey;
+        if( index > chars.length-1 ){
+            console.log('looped index : '+index)
+            index -= chars.length;
+        }
+        if( index < 0 ){
+            console.log('- looped index : '+index)
+            index += chars.length;
+        }
+        console.log(encryptArr[j]+"==>"+chars[index]);
+        encryptArr[j] = chars[index];
+    }
+
+    encryptedPwd = '';
+
+    for( let i=0;i<encryptArr.length;i++ ){
+        encryptedPwd +=encryptArr[i];
     }
 
     return encryptedPwd;
 }
 
-function decrypt(encryptedPwd, pwdLength){
+function decrypt(encryptedPwd, pwdLength, encryptionKey){
+
+    const chars = "lwZ9Mn0f2tbXLpCK3VNcRBqvJgx4mGHeju6S7ar5DoAyYFT8UkdWzEOsihPQ1I";
+
     let decryptedPwd = encryptedPwd.substr(2, pwdLength);
+
+    const decryptArr = [...decryptedPwd];
+
+    let index = 0;
+    // substitution cypher
+    for(let j = 0; j < decryptArr.length; j++){
+        index = chars.indexOf(decryptArr[j]);
+        index -= encryptionKey;
+        if( index < 0 ){
+            index += chars.length;
+        }
+        if( index > chars.length-1 ){
+            index -= chars.length;
+        }
+        console.log(decryptArr[j]+"==>"+chars[index]);
+        decryptArr[j] = chars[index];
+    }
+
+    decryptedPwd = '';
+
+    for( let i=0; i<decryptArr.length; i++ ){
+        decryptedPwd += decryptArr[i];
+    }
+
     return decryptedPwd;
 }
 
