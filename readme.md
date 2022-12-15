@@ -1,8 +1,12 @@
 # New Game Name
-short game description 
+A simple memory game made using only HTML, CSS and JavaScript. It has typical game features such as cloud save-game and high-score submits. This game runs in the browser, and does **not** require any download/installation. 
 
 ## About
-short game description
+This is a memory game. Just click on the blocks until you find the matching ones. <br>
+Points are awarded for each pair found. <br>
+Points are deducted for too many attempts, so tread carefully. <br>
+The 'Options' menu has many preferences that affect scoring and gameplay.
+That's it. Enjoy!
 
 ## ScreenShots
 
