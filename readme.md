@@ -8,14 +8,24 @@ Points are deducted for too many attempts, so tread carefully. <br>
 The 'Options' menu has many preferences that affect scoring and gameplay.
 That's it. Enjoy!
 
-## ScreenShots
-
-<img src = "/screenshots/" width="33%"></img>
-<img src = "/screenshots/" width="33%"></img>
-<img src = "/screenshots/" width="33%"></img>
-
 ## Features
-- list features
+- Play offline.
+- Play in dark-mode.
+- Change game difficulty.
+- Publish high-score to online scoreboard.
+- Save game and continue on another device.
+- Sound effects and background music.
+- Player registration and log-in.
+- Preferences saved to device.
+- Tooltips and help option.
+- Responsive - played on mobile or desktop.
+- High contrast for improved accessibility.
+
+
+## How To Play
+All necessary files will be loaded into your browser. The game can be played offline, with local save-game to save progress, but cloud save-game and highscore submit features will not be available. The game can be played on desktop or mobile.
+<br>
+**[Play The Game Here](http://.../)**
 
 ## How To Play
 where and how to play game
