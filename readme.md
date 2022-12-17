@@ -27,17 +27,19 @@ All necessary files will be loaded into your browser. The game can be played off
 <br>
 **[Play The Game Here](http://.../)**
 
-## How To Play
-where and how to play game
-
 ## Bug(s)
-- list bugs
+- 'Color Turned Blocks' feature - blocks colored when feature is ON will not change back when feature is switched OFF before load/continue game. The feature setting will work correctly for all other blocks. This bug does not affect gameplay, only user-experience.
+
 
 ## Game Libraries Used
-technologies used to make game
+No Gaming/Physics Libraries/Frameworks were used. Coded using HTML5, CSS3, JS (ES6).
 
 ## Author
-1) Email: 
-2) LinkedIn: 
-3) GitHub: 
-4) Portfolio:
+This game was created by **Rishaad**.
+1) [Email](mr.rishaad@gmail.com)
+2) [LinkedIn](https://www.linkedin.com/in/)
+3) [GitHub](https://github.com/git-rr)
+4) [Portfolio](rishaad.rajak.itvarsitystudent.org)
+
+## Credits
+<p>Background music: <a href="https://soundcloud.com/user-356546060" target="_blank">Tokyo Music Walker - Way Home</a> (Creative Commons License)</p>
