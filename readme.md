@@ -8,6 +8,12 @@ Points are deducted for too many attempts, so tread carefully. <br>
 The 'Options' menu has many preferences that affect scoring and gameplay.
 That's it. Enjoy!
 
+## ScreenShots
+
+<img src="./screenshots/screen-1.png" width="32%" alt="screenshot-1"></img>
+<img src="./screenshots/screen-2.png" width="32%" alt="screenshot-2"></img>
+<img src="./screenshots/screen-3.png" width="32%" alt="screenshot-3"></img>
+
 ## Features
 - Play offline.
 - Play in dark-mode.
