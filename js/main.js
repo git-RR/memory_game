@@ -1198,8 +1198,8 @@ function getPlayerName(){
 
     mainContent.innerHTML = `
     <form id="formPlayerData" onsubmit="event.preventDefault();">
-        <input id="playerName" type="text" class="inputField" placeholder="Player Name" minlength="3" maxlength="16" required>
-        <input id="passphrase" type="text" class="inputField" placeholder="Passphrase" minlength="3" maxlength="16" required>
+        <input id="playerName" type="text" class="inputField" placeholder="Player Name" pattern="[a-zA-Z0-9]{3,16}" required>
+        <input id="passphrase" type="text" class="inputField" placeholder="Passphrase" pattern="[a-zA-Z0-9]{3,16}" required>
         <label for="newPlayerCheckbox">
             <input id="newPlayerCheckbox" type="checkbox" name="newPlayerCheckbox" value="newPlayer">
             <span>I'm a new player</span>
