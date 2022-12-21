@@ -1,5 +1,4 @@
 const express = require("express");
-// const { sample } = require("underscore");
 const {MongoClient, ObjectId} = require("mongodb");
 const localFile = require("./env");
 
@@ -18,158 +17,84 @@ app.use(express.json());
 
 app.use(express.static('../'));     // for testing only
 
-app.get('/api/highscore', async (request, response)=>{
-    const client = await main();
-	const result = await getHighScores(client);
-    //response.json(sample_data)
-    console.log("---GET---");
-    // console.log(result);
-    // console.log("------")
-    response.json(result);
-});
-
-app.post("/api/highscore", async (request, response)=>{
-    const data = request.body;
-    const newHighScore = { playerName: data.playerName, score: data.score };
-    // const id = data.id;
-    const client = await main();
-    
-    const allHighScores = await getHighScores(client);
-    const deleteId = allHighScores[allHighScores.length-1]._id
-
-    const userCred = await getUserCred(client, data.playerName);
-    console.log("---POST---");
-
-    if( userCred !== null ){
-        // user found
-        if( userCred.passphrase === decrypt(data.passphrase, userCred.passphrase.length, userCred.encryptionKey) ){
-            // match
-            await addNewHighScore(client, newHighScore);
-            await deleteOldHighScore(client, deleteId);
-            console.log(`added new high score : ${newHighScore}`);
-            console.log(`deleted high score : ${deleteId}`);
-            response.json({data: 12, message: `High Score Submitted.`});
-        } else {
-            // do not match
-            response.json({data: 10, message: `Failed To Authenticate. Aborted High Score Submit.`});
-            console.log(`failed to authenticate`)
-        }
-    } else {
-        // user not found
-        response.json({data: 11, message: `User Not Found. Aborted High Score Submit.`});
-        console.log(`user not found`)
-
-    }
-
-    return;
-
-    /* start test code */
-    // console.log('New High Score:');
-    // console.log(data);
-    // sample_data.push({name:data.name, score:data.score, id:''});
-
-    // console.log('Added High Score to List:');
-    // console.log(sample_data);
-
-    // // remove lowest score
-    // sample_data.forEach((scoreObj)=>{
-    //     if(scoreObj.id === data.id){
-    //         sample_data.splice(sample_data.indexOf(scoreObj), 1);
-    //     }
-    // });
-
-    // console.log('New High Score List:');
-    // console.log(sample_data);
-    // response.json({data: 'high score list updated!'});
-    /* end test code */
-});
-
-// main()
-
 async function main(){
-    // const newHighScore = {name:data.name, score:data.score};
-    // const id = data.id;
-
     const password = process.env.DB_PWD || localFile.key;
     const uri = `mongodb+srv://robot-army:${password}@cluster0.cxoh44a.mongodb.net/?retryWrites=true&w=majority`;
     const client = new MongoClient(uri);
 
     try {
         await client.connect();
-        // await addNewHighScore(client, newHighScore);
-        // await deleteOldHighScore(client, id);
-        
-        // await resetHighScoreCollection(client);
-        // getHighScores(client)
-        // const result = await client.db(DATABASE).collection(COLLECTION_HIGHSCORE).deleteOne({_id:ObjectId('635befc24379eb3424036f8a')});
-        
-        // const userCred = await getUserCred( client, 'player1' );
-        // console.log('FROM TEST : ');
-        // console.log(userCred);
-
-        // for(i=1;i<4;i++){
-        //         //add sample data
-        //     await addNewUser(client, {playerName: `play${i}`, passphrase: '123' });
-        // }
-
-        //const result_delete2 = await client.db(DATABASE).collection(COLLECTION_USER_CREDS).deleteMany({});
-        //console.log(result_delete2);
-
-        // clearAllSaveGameData(client);
-
-
-        await getAllSaveGameData(client);
-
-        // const result = await updateSaveGameData(client, { playerName : 'play1'}, 	{$set:{
-        //     date        : '11/11/23',
-        //     tries       : 22,
-        //     score       : 12,
-        //     game        : `game data for ${this.playerName}`
-        // }});
-
-        // console.log('Matched Count : ');
-        // console.log(result.matchedCount);
-        // console.log('Modified Count : ');
-        // console.log(result.modifiedCount);
-
         return client;
-
     } catch (error) {
-        console.error(error)
+        console.error(error);           // debug
     }
-    // finally{
-    //     await client.close(); // client is used elsewhere; will not function if closed here
-    // }
 }
+
+/*** HIGH SCORE ***/
+
+app.get('/api/highscore', async (request, response)=>{
+    const client = await main();
+	const result = await getHighScores(client);
+    response.json(result);
+});
+
+app.post("/api/highscore", async (request, response)=>{
+    const data = request.body;
+    const newHighScore = { playerName: data.playerName, score: data.score };
+    const client = await main();
+    
+    const allHighScores = await getHighScores(client);
+    const deleteId = allHighScores[allHighScores.length-1]._id
+
+    const userCred = await getUserCred(client, data.playerName);
+
+    if( userCred !== null ){
+        // user found
+        if( userCred.passphrase === decrypt(data.passphrase, userCred.passphrase.length, userCred.encryptionKey) ){
+            // passphrase matched
+            await addNewHighScore(client, newHighScore);
+            await deleteOldHighScore(client, deleteId);
+            // console.log(`added new high score : ${newHighScore}`);   // debug
+            // console.log(`deleted high score : ${deleteId}`);         // debug
+            response.json({data: 12, message: `High Score Submitted.`});
+        } else {
+            // passphrase does not match
+            response.json({data: 10, message: `Failed To Authenticate. Aborted High Score Submit.`});
+            // console.log(`failed to authenticate`);                   // debug
+        }
+    } else {
+        // user not found
+        response.json({data: 11, message: `User Not Found. Aborted High Score Submit.`});
+        // console.log(`user not found`);                               // debug
+
+    }
+
+    return;
+});
 
 async function addNewHighScore(client, newHighScore){
 	const result = await client.db(DATABASE).collection(COLLECTION_HIGHSCORE).insertOne(newHighScore);
-	console.log(`New high score added with id: ${result.insertedId}`);
+	// console.log(`New high score added with id: ${result.insertedId}`);       // debug
 }
 
 async function deleteOldHighScore(client, id){
     const result = await client.db(DATABASE).collection(COLLECTION_HIGHSCORE).deleteOne({_id:ObjectId(id)});
-    console.log(`${result.deleteCount} document(s) was/were deleted.`)
+    // console.log(`${result.deleteCount} document(s) was/were deleted.`);      // debug
 }
 
 async function getHighScores(client){
 	const cursor = await client.db(DATABASE).collection(COLLECTION_HIGHSCORE).find({}).sort({score: -1}).limit(high_score_list_limit);
     const result = await cursor.toArray();
-    console.log(result);
+    // console.log(result);             // debug
     return result;
 }
 
-/* SAVE GAME */
+/*** SAVE GAME ***/
 
 app.get('/api/save-game', async (request, response)=>{
- 
+    // load game
+
     const player_name_query = request.query.playerName;
-    // const load_game_query = parseInt(request.query.loadGame);
-    // const identifier_query = request.query.identifier;  // passphrase
-    // const identifier_query = decrypt(request.query.identifier);      //  decrypt here
-
-
-    // cloud db
     const client = await main();
     const userCred = await getUserCred( client, player_name_query );
 
@@ -185,111 +110,11 @@ app.get('/api/save-game', async (request, response)=>{
         response.json({data: 08, message: `Failed To Authenticate. Load Aborted.`});
     }
     return;
-
-    // old code; did player auth here
-
-    // if( userCred === null ) {
-    //     // did not find user in user db
-
-    //     if( load_game_query ) {
-    //         // load game
-    //         response.json({data: 404, message: `did not find : ${player_name_query}`});
-    //         console.log(`LOAD-FAILED : did not find : ${player_name_query}`);
-    //         return;
-    //     } else {
-    //         // create new user    
-    //         response.json({data: 403, status:'available'});
-    //         console.log('check result : username is available');
-    //         return;
-    //     }
-
-    // } else {
-    //     // user found
-
-    //     if( !load_game_query ){
-    //         // create new user
-    //         response.json({data: 403, status:'unavailable'});
-    //         console.log('check result : username already exists');
-    //         return;
-    //     } else {
-    //         // load game 
-
-    //         if( userCred.passphrase === identifier_query ){
-    //             // auth successful
-    //             const game_data = await getSaveGameData(client, player_name_query);
-    //             response.json(game_data);
-    //         } else {
-    //             // auth failed
-    //             response.json({data: 404, message: `user '${player_name_query}' authentication failed!`});
-    //             console.log(`AUTH-FAILED : did not match : ${player_name_query} passphrase`);
-    //             return;
-    //         }
-
-    //     }
-
-    // }
-
-    /* test code */
-
-    // TODO
-    // get username from request
-    // check if username in database
-    // yes: send save game data back; no: send not found message
-
-    // console.log(request.url);
-    // console.log(request.query);
-
-    // let found_player_name = false;
-    // let i = -1;
-    // let auth_success = false;
-
-    // test_user_db.forEach( ( user ) => {
-    //     if( user.playerName === player_name_query ){
-    //         if( user.passphrase === identifier_query ){
-    //             auth_success = true;
-    //             return;
-    //         }
-    //     }
-    // });
-
-    // for( i in test_save_game ){
-    //     // console.log(test_save_game[i])
-    //     if( test_save_game[i].playerName === player_name_query ){
-    //         // response.send("found : "+test_save_game[i].playerName);
-    //         //response.json(test_save_game[i]);
-    //         //return;
-    //         found_player_name = true;
-    //         break;
-    //     }
-    // }
-
-    // if( found_player_name ) {
-    //     if( load_game_query && auth_success ) {                 // load game
-    //         // response.json(test_save_game[i]);
-    //         // console.log('LOAD-SUCCESSFUL : data sent back');
-    //         // return;
-    //     } else {                                // check to create new user    
-    //         response.json({data: 403, status:'unavailable'});
-    //         console.log('check result : username already exists');
-    //         return;
-    //     }
-    // } else {
-    //     if( load_game_query && auth_success ) {                 // load game
-    //         response.json({data: 404, message: `did not find : ${player_name_query}`});
-    //         console.log(`LOAD-FAILED : did not find : ${player_name_query}`);
-    //         return;
-    //     } else {                                // check to create new user    
-    //         response.json({data: 403, status:'available'});
-    //         console.log('check result : username is available');
-    //         return;
-    //     }
-    // }
-
-   //response.json({data:403 ,message:'login failed. check details and try again.'});
-   /* end test code */
 });
 
 app.post("/api/save-game", async (request, response)=>{
+    // new save game
+
     const data = request.body;
 
     const newSaveGame = {
@@ -301,12 +126,6 @@ app.post("/api/save-game", async (request, response)=>{
         blockMap: data.blockMap,
     };
 
-    // const newUserCred = {
-    //     playerName: data.playerName,
-    //     passphrase: data.passphrase,
-    // };
-
-    // cloud db
     const client = await main();
     const userCred = await getUserCred( client, newSaveGame.playerName );
 
@@ -318,38 +137,11 @@ app.post("/api/save-game", async (request, response)=>{
         console.log('Auth Failed @ post save game');
     }
 
-
-    // await addNewUser(client, newUserCred); // removed since create user is handled by .post(user-cred)
-
-    /* get result to check if this succeeded? */
-
-
-
-
-    // TODO 
-    // check whether user has saved game before; 
-    // yes: update; no: create new save game
-
-    /* start test code */
-
-    // console.log('New Save Game:');
-    // console.log(data.playerName);
-
-    // test_save_game.push(data);
-
-    // //add new user
-    // test_user_db.push({
-    //     playerName: data.playerName,
-    //     passphrase: data.passphrase,
-    // })
-
-    // console.log('dummy DB: ')
-    // console.log(test_save_game)
-    // response.json({data: 'game saved!'});
-    /* end test code */
 });
 
 app.put("/api/save-game", async (request, response)=>{
+    // update save game
+
     const data = request.body;
 
     const updatedSaveData = {
@@ -368,156 +160,74 @@ app.put("/api/save-game", async (request, response)=>{
     if( userCred.passphrase === decrypt(data.passphrase, userCred.passphrase.length, userCred.encryptionKey) ){
         // auth successful
         const result = await updateSaveGameData( client, { playerName : data.playerName }, updatedSaveData );
-        // response.json({data: 'save game updated.'});
         
-        /* check if this fails and send back error code. */
-
         if( result.matchedCount || result.modifiedCount ) {
-            response.json({data: 07, message: 'Update Succeeded.' });
+            response.json({ data: 07, message: 'Update Succeeded.' });
         } else {
-            response.json({data: 06, message: 'Update Failed.' });
+            response.json({ data: 06, message: 'Update Failed.' });
         }
-
-        console.log('Matched Count : ');
-        console.log(result.matchedCount);
-        console.log('Modified Count : ');
-        console.log(result.modifiedCount);
     }else{
         console.log('Auth Failed @ put save game');
     }
-
-    
-
-    // if( result === null ){
-    //     response.json({data: 06, message: 'Update Failed.' });
-    // } else {
-    //     response.json({data: 07, message: 'Update Succeeded.' });
-    // }
-    
-    
-    
-    /* start test code */
-
-    // console.log('Updating Save Game:');
-    // console.log(data.playerName);
-    // console.log('TYPE : ');
-    // console.log(typeof(test_save_game));
-    // console.log('DATA : ');
-    // console.log(test_save_game);
-    
-    // test_save_game.forEach((entry)=>{
-    //     if( entry.playerName === data.playerName ) {
-
-    //         console.log('old data');
-    //         console.log(entry.playerName);
-    //         console.log(entry.blockMap);
-
-    //         entry.playerName = data.playerName      // this is not updated; redundant
-    //         entry.passphrase = data.passphrase      // this is not updated; redundant
-    //         entry.date = data.date
-    //         entry.game = data.game
-    //         entry.score = data.score
-    //         entry.tries = data.tries
-    //         entry.blockMap = [];
-    //         data.blockMap.forEach( block=>{ entry.blockMap.push(block) } );
-
-    //         console.log('new data');
-    //         console.log(entry.playerName);
-    //         console.log(entry.blockMap);
-
-    //         response.json({data: 'save game updated.'});
-    //         // return; // better to include return after response
-    //     } else {
-    //         // debugging
-    //         console.log(`${entry.playerName} is not ${data.playerName}`);
-    //         // return; // better to include return after response
-    //     }
-    // });
-
-    // console.log('NEW DATA : ');
-    // console.log(test_save_game);
-
-
-    // test_save_game.push(data);
-    // console.log('dummy DB: ')
-    // console.log(test_save_game)
-    // response.json({data: 'end of PUT'});
-    /* end test code */
 });
 
 app.post("/api/user-cred", async (request, response)=>{
+    // create new user
+
     const data = request.body;
 
-    // const encryptionKey = Math.floor(Math.random() * 61 + 1);
     const encryptionKey = Math.floor(Math.random() * (61 + 61 + 1)) - 61; //(max - min + 1)) + min
 
     const newUserCred = {
         playerName: data.playerName,
-        passphrase: data.passphrase,  // do not decrypt here; passphrase may come from form
+        passphrase: data.passphrase,
         encryptionKey : encryptionKey,
     };
 
     const loginFlag = (data.login);
-
     const client = await main();
-    
-    // get user
     const userCred = await getUserCred( client, data.playerName );
-
-    console.log(data);
-
-    // check incoming cred's
-    
-    console.log("_____________________");
-    console.log(`check for ${ data.playerName }`);
 
     if( userCred === null ) {
         // not found
+
         if( loginFlag ) {
             // trying to log in
-            console.log('Login Failed : User Not Found');
             response.json({data: 01, status:'Login Failed.'});
         } else {
             // trying to create new user
             await addNewUser(client, newUserCred);
-            console.log('New User Created.')
             response.json({
                 data: 02, 
                 status:'New User Created.', 
-                passphrase: encrypt(newUserCred.passphrase, newUserCred.encryptionKey),        // send encrypted version here
+                passphrase: encrypt(newUserCred.passphrase, newUserCred.encryptionKey),
             });
-            console.log('Encrypted Pwd : '+encrypt(newUserCred.passphrase, newUserCred.encryptionKey))
         }
+
     } else {
         // found
+
         if( loginFlag ) {
             // trying to log in
-            
-            // newUserCred.passphrase = decrypt(newUserCred.passphrase);       // dont decrypt before check; input from user
 
             if( userCred.passphrase === newUserCred.passphrase ){
-                // passphrase match
-                console.log('Login Succeeded.');
+                // passphrase matched
                 response.json({
                     data: 03, 
                     status:'Login Succeeded.',
-                    passphrase: encrypt(userCred.passphrase, userCred.encryptionKey),        // send encrypted version here
+                    passphrase: encrypt(userCred.passphrase, userCred.encryptionKey),
                 });
-                console.log('Encrypted Pwd : '+encrypt(userCred.passphrase, userCred.encryptionKey))
+
             } else {
                 // passphrase mismatch
-                console.log('Login Failed. Check Passphrase.');
                 response.json({data: 04, status:'Login Failed.'});
             }
             
         } else {
             // trying to create new user
-            console.log('New User Not Created : Username is taken.');
             response.json({data: 05, status:'Username is Taken.'});
         }
     }
-
-    console.log("_____________________");
     
     return;
 });
