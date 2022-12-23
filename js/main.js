@@ -176,6 +176,9 @@ function homeScreen(){
                             setTimeout( () => {
                                 homeScreen();
                             }, 2000 );
+                        } else {
+                            btnSubmitPlayerName.disabled = false;
+                            return;
                         }
     
                     });
