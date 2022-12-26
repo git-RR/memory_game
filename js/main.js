@@ -1,6 +1,7 @@
 
-//const mainContent = document.getElementById("mainContent");
-//const scoreboard = document.getElementById("scoreboard");
+const mainContent = document.getElementById("mainContent");
+const scoreboard = document.getElementById("scoreboard");
+const body = document.querySelector('body');
 
 const homeScreenHTML = `
     <button id="btnContinue" class="btn-type-a" hidden>Continue</button>
@@ -18,18 +19,18 @@ let scoreValue = 0;                             // player's score
 let scorePoint = 2;                             // value added to score on each correct move
 let tryValue = 0;                               // number of attempts; to be used in score calc
 let prevScoreTry = 0;                           // attempt number of last score change
-let blocks = null;                              // array of block nodes
-let blocksArr = null;                           
-//let endOfGameFlag = false;
+let blocks = null;                              // prototype : NodeList
+let blocksArr = null;                           // prototype : Array
+
 let blockClicked = (event) => {
     const block = event.target.parentNode;
     block.removeEventListener('click', blockClicked);   // same block cannot be selected more than once
     block.children[0].style.opacity = '1';
-    // console.log(blocksArr.indexOf(block));
+
     selectedBlocks.push(blocksArr.indexOf(block));
     
     if(colorBlock){
-        event.target.parentNode.style.backgroundColor = "#777";         // shows blocks that have been selected
+        event.target.parentNode.style.backgroundColor = "#777"; 
     }
 
     if(selectedBlocks.length>=2){
@@ -37,20 +38,23 @@ let blockClicked = (event) => {
         checkIfBlocksMatch();
         setTimeout(addBlockEventListeners, 400);
     }
+
     if( JSON.parse( localStorage.getItem("preferences") ).playAudio ){
         soundClick();
     }
 }
-const body = document.querySelector('body');
+
+const myPortfolioLink = "https://www.rishaadrajak.com";
 const ScreenTransitionDuration = 400;
-let playAudio = true;
+let col = 2;                                // row, col used to display blocks; default values not used
+let row = 1;
+
+let playAudio = true;                       // preferences
 let darkMode = false;
 let difficulty = 'normal';
 let colorBlock = true;
 let fullscreenMode = true;
-let col = 2;
-let row = 1;
-let displayClass = `${difficulty}Mode`;    // easyMode normalMode hardMode; changes how blocks are displayed based on difficulty
+let displayClass = `${difficulty}Mode`;     // easyMode normalMode hardMode; changes how blocks are displayed
 
 homeScreen();
 
@@ -75,7 +79,6 @@ function soundClick(){
 
 function homeScreen(){
 
-    // removeInGameClass(body);
     removeElementClass(body, 'in-game');
 
     preferences();
@@ -96,7 +99,7 @@ function homeScreen(){
         setTimeout(()=>{ 
             startGame();
             fadeIn(mainSection);
-        } , ScreenTransitionDuration);
+        }, ScreenTransitionDuration);
     });
     const btnHighScore = document.getElementById("btnHighScore");
     btnHighScore.addEventListener('click', ()=>{ 
@@ -104,7 +107,7 @@ function homeScreen(){
         setTimeout(()=>{ 
             showHighScore();
             fadeIn(mainSection);
-        } , ScreenTransitionDuration);
+        }, ScreenTransitionDuration);
     });
     const btnOptions = document.getElementById("btnOptions");
     btnOptions.addEventListener('click', ()=>{ 
@@ -112,7 +115,7 @@ function homeScreen(){
         setTimeout(()=>{ 
             showOptions();
             fadeIn(mainSection);
-        } , ScreenTransitionDuration);
+        }, ScreenTransitionDuration);
     });
     const btnContinue = document.getElementById("btnContinue");
     btnContinue.addEventListener('click', ()=>{ 
@@ -120,18 +123,12 @@ function homeScreen(){
         setTimeout(()=>{ 
             continueGame();
             fadeIn(mainSection);
-        } , ScreenTransitionDuration);
+        }, ScreenTransitionDuration);
     });
     const btnLoad = document.getElementById("btnLoad");
     btnLoad.addEventListener('click', ()=>{ 
-        // fadeOut(mainSection);
-        // setTimeout(()=>{ 
-            checkAndLoadGame();
-            // fadeIn(mainSection);
-        // } , ScreenTransitionDuration);
+        checkAndLoadGame();
     });
-
-    // btnNewGame.click()
 
     inGameMenu.innerHTML = ``;
 
@@ -164,12 +161,14 @@ function homeScreen(){
             `;
     
             const btnProfile = document.getElementById("btnProfile");
+
             btnProfile.addEventListener('click', ()=>{ 
                 fadeOut(mainSection);
                 setTimeout(()=>{ 
                     getPlayerName();
                     
                     btnSubmitPlayerName.addEventListener('click', async ()=>{
+
                         const successfulLogin = await playerProfile();
     
                         if( successfulLogin ) {
@@ -182,6 +181,7 @@ function homeScreen(){
                         }
     
                     });
+                    
                     addEventListenerBtnReturnHome(btnCancelSubmitPlayerName);
     
                     fadeIn(mainSection);
@@ -214,7 +214,6 @@ function audioControl(event){
 
 function showOptions(){
     mainContent.innerHTML = ``;
-    // mainContent.style.flexDirection = "column";
     mainContent.classList = "show-options";
     scoreboard.innerHTML = `
         <h1>Options Menu</h1>
@@ -382,7 +381,7 @@ function showHelp(){
                     <li>Save game and continue on another device.</li>
                 </ul>
                 <h3>Credits</h3>
-                <p>This game was created by <a href="www.com" target="_blank">Rishaad</a>.</p>
+                <p>This game was created by <a href="${myPortfolioLink}" target="_blank">Rishaad</a>.</p>
                 <p>Background music: <a href="https://soundcloud.com/user-356546060" target="_blank">Tokyo Music Walker - Way Home</a> (Creative Commons License)</p>
                 <button id="btnOptionReturn" class="btnOption">Return</button>
             </div>
@@ -414,12 +413,12 @@ function setFullscreenPref(event){
     updateLocalStorage("preferences", "fullscreenMode", fullscreenMode);
 
     if( document.fullscreenElement === body ){
-        // currently displaying fullscreen
+        // displaying in fullscreen
         if( !fullscreenMode ){
             document.exitFullscreen();
         }
     }else{
-        // not currently displaying fullscreen
+        // not displaying in fullscreen
         if( fullscreenMode ){
             body.requestFullscreen()
                 .then(()=>{ console.log('fullscreen mode'); })
@@ -460,34 +459,23 @@ function changeDifficulty(event){
     btnClicked.classList.add('clicked');
     updateLocalStorage("preferences", "difficulty", difficulty);
     setDifficulty();
-    // console.log(difficulty+' mode selected')
 }
 
 function changeMode(event){
     const btnClicked = event.target;
-    // console.log( 'Mode : '+btnClicked );
     const tooltips = document.querySelectorAll('.tooltip');
 
     if( btnClicked.innerText === 'Dark' ) {
         darkMode = true;
-        // addDarkModeClass(mainSection);
-        // addElementClass(mainSection, 'darkMode');
-        // addDarkModeClass(document.querySelector('body'));
         addElementClass(body, 'darkMode');
-
         btnOptionModeLight.classList.remove('clicked');
     } else if( btnClicked.innerText === 'Light' ) {
         darkMode = false;
-        // removeDarkModeClass(mainSection);
-        // removeDarkModeClass(document.querySelector('body'));
         removeElementClass(body, 'darkMode');
-        // removeElementClass(mainSection, 'darkMode');
-
         btnOptionModeDark.classList.remove('clicked');
     }
-    btnClicked.classList.add('clicked');
-    // console.log(btnClicked.classList)
-    // localStorage.setItem( "preferences", JSON.stringify( { darkMode : darkMode } ) );
+    addElementClass(btnClicked, 'clicked');
+
     updateLocalStorage("preferences", "darkMode", darkMode);
 
     tooltips.forEach((tooltip)=>{
