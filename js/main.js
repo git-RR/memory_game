@@ -2,6 +2,7 @@
 const mainContent = document.getElementById("mainContent");
 const scoreboard = document.getElementById("scoreboard");
 const body = document.querySelector('body');
+const userLogin = document.getElementById('userLogin');
 
 const homeScreenHTML = `
     <button id="btnContinue" class="btn-type-a" hidden>Continue</button>
@@ -21,6 +22,7 @@ let tryValue = 0;                               // number of attempts; to be use
 let prevScoreTry = 0;                           // attempt number of last score change
 let blocks = null;                              // prototype : NodeList
 let blocksArr = null;                           // prototype : Array
+let flagToggleMenu = false;                     // show/hide in-game menu
 
 let blockClicked = (event) => {
     const block = event.target.parentNode;
@@ -500,30 +502,6 @@ function removeElementClass(element, ...classArr){
     });
 }
 
-// function addDarkModeClass(element){
-//     if(!element.classList.contains('darkMode')){
-//         element.classList.add('darkMode');
-//     }
-// }
-
-// function removeDarkModeClass(element){
-//     if(element.classList.contains('darkMode')){
-//         element.classList.remove('darkMode');
-//     }
-// }
-
-// function addInGameClass(element){
-//     if(!element.classList.contains('in-game')){
-//         element.classList.add('in-game');
-//     }
-// }
-
-// function removeInGameClass(element){
-//     if(element.classList.contains('in-game')){
-//         element.classList.remove('in-game');
-//     }
-// }
-
 function updateLocalStorage(key, prop, value){
     const object = JSON.parse( localStorage.getItem(key) );
     if( object ){
@@ -562,24 +540,15 @@ function preferences(){
     }
 
     if ( darkMode ) {
-        // addDarkModeClass(mainSection);
-        // addDarkModeClass(document.querySelector('body'));
         addElementClass(body, 'darkMode');
-        // addElementClass(mainSection, 'darkMode');
     } else {
-        // removeDarkModeClass(mainSection);
-        // removeDarkModeClass(document.querySelector('body'));
         removeElementClass(body, 'darkMode');
-        // removeElementClass(mainSection, 'darkMode');
-
     }
 
     setDifficulty();
 }
 
 function setDifficulty(){
-    // let col = 2;    // 4 easy med hard
-    // let row = 1;   // 4     7    10
     col = 4;
     switch ( difficulty ) {
         case 'easy':    row = 4; break;
@@ -587,8 +556,7 @@ function setDifficulty(){
         case 'normal': 
         default:        row = 7;break;
     }
-    // console.log('row: '+row);
-    displayClass = `${difficulty}Mode`;    // easyMode, normalMode, hardMode
+    displayClass = `${difficulty}Mode`;         // values : easyMode, normalMode, hardMode
 }
 
 function startGame(){
@@ -598,26 +566,14 @@ function startGame(){
             .catch((err)=>{ console.log(err); });
     }
     mainContent.innerHTML = ``;
-    // mainContent.classList += displayClass;
     addElementClass(mainContent, 'in-game', displayClass);
     addElementClass(body, 'in-game');
-    // addInGameClass(mainContent);
-    // addInGameClass(body);
-    // mainContent.style.flexDirection = "row";
-    // mainContent.style.alignContent = "flex-start";
-    // mainContent.style.justifyContent = "space-evenly";
     scoreboard.innerHTML = `
         <h1>Score: <span id="scoreCount"></span></h1>
         <h1>Try: <span id="tryCount"></span></h1>
     `;
     userLogin.innerHTML = ``;
     scoreboard.classList = "in-game-scoreboard";
-
-    //const scoreCount = document.getElementById("scoreCount");
-    //const tryCount = document.getElementById("tryCount");
-    
-    // scoreValue = 0;
-    // tryValue = 0;
 
     setScoringSystem();
 
@@ -630,8 +586,8 @@ function startGame(){
     displayBlocks();
     
     blocks = document.querySelectorAll(".block");
-    blocksArr = Array.from(blocks);                   // or  arr = [...nodeList]
-    //console.log(blocks)
+    blocksArr = Array.from(blocks);
+
     addBlockEventListeners();
 
     addInGameMenu();
@@ -656,29 +612,19 @@ function checkIfBlocksMatch(){
     tryValue++;
     tryCount.innerText = tryValue;
 
-    // autosave game feature
-    // prepareSaveGame();
-    // saveGameLocal();
-    // end autosave game feature
-
     const block1 = blocks[selectedBlocks[0]];
     const block2 = blocks[selectedBlocks[1]];
 
-    if(blockMap[selectedBlocks[0]]===blockMap[selectedBlocks[1]]){
+    if( blockMap[selectedBlocks[0]] === blockMap[selectedBlocks[1]] ){
         // blocks matched
-        block1.classList += " found";                   // add class to keep blocks visible
-        block2.classList += " found";
+        addElementClass(block1, 'found');
+        addElementClass(block2, 'found');
         
         updateScore();
-        // scoreValue += scorePoint;
-        // scoreCount.innerText = scoreValue;
-        // console.log(`Score: ${scoreValue}`);
 
-        if(document.querySelectorAll(".block.found").length===row*col){              // end of game
-            console.log('Well Done!');
+        if(document.querySelectorAll(".block.found").length===row*col){ // end of game
             scoreCount.style.color = "red";
             tryCount.style.color = "red";
-            //endOfGameFlag = true;
 
             calculateFinalScore();
             
@@ -689,11 +635,6 @@ function checkIfBlocksMatch(){
         setTimeout(() => {
             block1.querySelector(" :nth-child(1)").style.opacity = '0';
             block2.querySelector(" :nth-child(1)").style.opacity = '0';
-            // blocks.forEach((block)=>{
-            //     if(!block.classList.contains("found")){
-            //         block.querySelector(" :nth-child(1)").style.display = 'none';
-            //     }
-            // });
         }, 800);
     }
 
@@ -724,41 +665,12 @@ async function endGame(){
         }, 2000); 
 
     }, 800);
-
-    
-
-    // try{
-    //     const sortedScores = await getHighScore();
-
-    //     if(sortedScores.length===0){
-    //         throw "getHighScore() returned []";
-    //     }
-
-    //     setTimeout(()=>{
-    //         if( scoreValue > parseInt(sortedScores[sortedScores.length-1].score) ){
-    //             deleteScoreId = sortedScores[sortedScores.length-1]._id  // global variable
-    //             getPlayerName();
-    //             newPlayerCheckbox.parentNode.style.display = "none";
-    //             btnSubmitPlayerName.addEventListener('click', submitHighScore);
-    //             addEventListenerBtnReturnHome(btnCancelSubmitPlayerName);
-    //         }else{
-    //             showHighScore(); // show high scores at end of game
-    //         }
-    //     }, 2000);
-
-    // } catch (error){
-    //     setTimeout(()=>{
-    //         homeScreen();
-    //     }, 2000); 
-    //     console.log(error);
-    // }
-
 }
 
 function generateBlockMap(){
     // generate random placement of blocks and place in blockMap
 
-    if(row*col>all_blocks.length*2){
+    if( row*col > all_blocks.length*2 ){
         console.log("Error: row * col > all blocks");
         return
     }
@@ -768,129 +680,57 @@ function generateBlockMap(){
     for (let k=0; k<all_blocks.length; k++) {
         allBlockIndex.push(k);
     }
-    // console.log("block Index:")
-    // console.log(allBlockIndex)
     
     for (let j=0; j<row*col/2; j++) {
+        // select random blocks from all possible
         let randomBlockIndex = Math.floor(Math.random()*allBlockIndex.length)+0;
         for (let r = 0; r < 2; r++) {
             remainingBlocks.push(all_blocks[allBlockIndex[randomBlockIndex]]);
         }
-        allBlockIndex.splice(randomBlockIndex, 1); 
+        allBlockIndex.splice(randomBlockIndex, 1);              // same block cannot be selected twice
     }
     
-    for (let c = 0; c < row*col; c++) {
-        let randomBlockIndex = Math.floor(Math.random()*remainingBlocks.length)+0; // 0 to 7 index
+    for (let c=0; c<row*col; c++) {
+        // place blocks in random order
+        let randomBlockIndex = Math.floor(Math.random()*remainingBlocks.length)+0;
         blockMap[c] = remainingBlocks[randomBlockIndex];
-        remainingBlocks.splice(randomBlockIndex, 1);          // remove element
+        remainingBlocks.splice(randomBlockIndex, 1);            // same block cannot be placed twice
     }
-    
-    // populateArray(row*col/2, allBlockIndex.length, 2, remainingBlocks, allBlockIndex);
-    // populateArray(row*col, remainingBlocks.length, 1, blockMap, [])
-    // function populateArray(loopLimit, randomLimit, copies, mainArr, indexArr){
-    //     let flag = indexArr.length===0?true:false;
-    //     console.log("FLAG: "+flag)
-    //     for (let j=0; j<loopLimit; j++) {
-    //         let randomBlockIndex = Math.floor(Math.random()*randomLimit)+0;
-    //         for (let r = 0; r < copies; r++) {
-    //             mainArr.push(
-    //                 flag?
-    //                     remainingBlocks[randomBlockIndex]:
-    //                     all_blocks[indexArr[randomBlockIndex]]
-    //             );
-    //         }
-    //         flag?
-    //         mainArr.splice(randomBlockIndex, 1):
-    //         indexArr.splice(randomBlockIndex, 1);
-    //     }
-    // }
-
-    // all_blocks.forEach((e)=>{
-    //     for (let r = 0; r < 2; r++) {
-    //         remainingBlocks.push(e);
-    //     }
-    // });
-
-    // 2-D array
-    // for (let r = 0; r < row; r++) {
-    //     blockMap.push([]);
-    //     for (let c = 0; c < col; c++) {
-    //         let randomBlock = Math.floor(Math.random()*remainingBlocks.length)+0; // 0 to 7 index
-    //         blockMap[r][c] = remainingBlocks[randomBlock];
-    //         remainingBlocks.splice(randomBlock,1); // remove element
-    //     }
-    // }
 }
 
 function displayBlocks(){
-    // mainSection.style.height = "auto"
-    // mainContent.style.display = 'block';
-
-    // let i = 0;
 
     for (let r=0; r<row*col; r++) {
         let rowDisplay = ``;
-        // rowDisplay += `
-        //     <div class="row"> 
-        // `;
-        // for (let c=0; c<col; c++) {
-            let block = blockMap[r];
-                // <div class="block ${darkMode?'darkMode':''}">
-            rowDisplay += `
-                <div class="block ${displayClass}">
-                    <img class="face-img col-1" src="images/face-${block}.png" alt="">
-                    <div class="blockArea"></div>
-                </div>
-            `;
-            // i++;
-        // }
-        // rowDisplay += `
-        //     </div> 
-        // `;
+        let block = blockMap[r];
+        rowDisplay += `
+            <div class="block ${displayClass}">
+                <img class="face-img col-1" src="images/face-${block}.png" alt="">
+                <div class="blockArea"></div>
+            </div>
+        `;
         mainContent.innerHTML += rowDisplay;
     }
 
-    // blockMap.forEach((block)=>{
-    //     mainContent.innerHTML += `
-    //         <div class="block">
-    //             <img class="face-img" src="images/face-${block}.png" alt="">
-    //             <div class="blockArea"></div>
-    //         </div>
-    //     `;
-    // });
-    // blockMap.forEach((blockRow)=>{
-    //     blockRow.forEach((e)=>{
-    //         mainContent.innerHTML += `
-    //             <div class="block">
-    //                 <img class="face-img" src="images/face-${e}.png" alt="">
-    //             </div>
-    //         `;
-    //     })
-    // });
-
     // debugging
-    let str = "";
-    for (let r = 0; r < row; r++) {
-        for (let c = 0; c < col; c++) {
-            str += blockMap[(r*col)+c] +  " ";
-        }
-        str += "\n";
-    }
-    console.log("Block Map:")
-    console.log("-----------")
-    console.log(str);
-    console.log("-----------")
+    // let str = "";
+    // for (let r = 0; r < row; r++) {
+    //     for (let c = 0; c < col; c++) {
+    //         str += blockMap[(r*col)+c] +  " ";
+    //     }
+    //     str += "\n";
+    // }
+    // console.log("Block Map:")
+    // console.log("-----------")
+    // console.log(str);
+    // console.log("-----------")
 }
 
 // HIGH SCORE BOARD
-//showHighScore();
-
 
 async function showHighScore(){
 
     mainContent.classList = "";
-    // mainContent.style.display = "flex";
-    // mainContent.style.flexDirection = "column";
     mainContent.style.justifyContent = "space-evenly";
 
     userLogin.innerHTML = ``;
@@ -927,9 +767,8 @@ async function showHighScore(){
             `;
 
             let highScores = await getHighScore(signal);
-            //console.log(highScores)
 
-            if(highScores.length===0){
+            if(highScores.length === 0){
                 throw "getHighScore() returned []";
             }
 
@@ -955,9 +794,6 @@ async function showHighScore(){
                 <button id="btnReturnHome" class="btn-type-a">Return</button>
             `;
             console.log(error);
-        } finally {
-            // btnReturnHome = document.getElementById("btnReturnHome");
-            // addEventListenerBtnReturnHome(btnReturnHome);
         }
 
     }else{
@@ -967,8 +803,6 @@ async function showHighScore(){
             <h1>You're not connected.</h1>
             <button id="btnReturnHome" class="btn-type-a">Return</button>
         `;
-        // btnReturnHome = document.getElementById("btnReturnHome");
-        // addEventListenerBtnReturnHome(btnReturnHome);
     }
 
     btnReturnHome = document.getElementById("btnReturnHome");
@@ -987,9 +821,7 @@ function addEventListenerBtnReturnHome(btnId){
         });
 
         setTimeout(()=>{ 
-
             homeScreen();
-
             fadeIn(mainSection);
         } , ScreenTransitionDuration);
     });
@@ -1001,18 +833,13 @@ async function getHighScore( signal = null ){
             let response;
             if( signal ){
                 response = await fetch("/api/highscore", {method:'get', signal:signal});
-                console.log("ABORT SIGNAL")
             } else {
                 response = await fetch("/api/highscore");
-                console.log("NO SIGNAL")
             }
-            console.log("signal");
-            console.log(signal)
+
             const json = await response.json();
-            // console.log(response)
             let sortedScores = [...json];
-            // console.log(sortedScores);
-            // return sortHighScore(json);
+
             return sortedScores;
         } catch(error){
             console.log(error);
@@ -1022,27 +849,6 @@ async function getHighScore( signal = null ){
         return [];
     }
 }
-
-// function sortHighScore(scores){
-//     let sortedScores = [...scores];
-//     for (let i = 0; i < scores.length; i++) {
-//         // console.log("i="+i)
-//         for (let j = i+1; j < scores.length; j++) {
-//             // console.log(sortedScores[i].score+" < "+sortedScores[j].score+" ?")
-//             if(parseInt(sortedScores[i].score)<parseInt(sortedScores[j].score)){
-//                 // console.log("yes")
-//                 let temp = sortedScores[i];
-//                 sortedScores[i] = sortedScores[j];
-//                 sortedScores[j] = temp;
-//             }else{
-//                 // console.log("no")
-//             }
-//         }
-//     }
-//     // console.log("sorted scores:");
-//     // console.log(sortedScores);
-//     return sortedScores;
-// }
 
 async function newHighScore(){
     const overlayScreen = document.getElementById("feedbackScreen");
@@ -1059,13 +865,10 @@ async function newHighScore(){
 
         if( scoreValue > parseInt(sortedScores[sortedScores.length-1].score) ){
             // new high score
-            // deleteScoreId = sortedScores[sortedScores.length-1]._id  // global variable
 
             if( getUserDetails() ){
                 // user logged in
-    
-                // showUserFeedback();
-                // const message_text = document.getElementById('message_text');
+
                 message_text.innerText = `submitting high score...`;
     
                 await submitHighScore();
@@ -1132,15 +935,12 @@ async function newHighScore(){
             homeScreen();
             fadeIn(mainSection);
         }, ScreenTransitionDuration); 
-        // console.log(error);
+        console.log(error);
     }
 
 }
 
-// let deleteScoreId = "";
-
 async function submitHighScore(){
-    // let player_name = playerName.value; // global 
 
     const localUserDetails = getUserDetails();
 
@@ -1149,9 +949,6 @@ async function submitHighScore(){
         passphrase: localUserDetails.passphrase,
         score: scoreValue,
     };
-
-    // console.log('DATA SENT TO DATABASE: ')
-    // console.log(newHighScore);
 
     const options = {
         method: 'POST',
@@ -1170,29 +967,10 @@ async function submitHighScore(){
         message_text.classList = '';
     }
 
-    // // basic input validation - to be expanded later
-    // if( player_name.length>3 && player_name.length<=16 ){
-    //     btnSubmitPlayerName.removeEventListener('click', submitHighScore);
-    //     // const scores = await getHighScore();
-    //     // checkCurrentScore(scoreValue, scores); // moved to endgame()
-        
-    //     const response = await fetch('/api', options);
-    //     const json = await response.json();
-
-    //     console.log(json.data);
-    //     showHighScore();                    // show high score list with new high score
-    // }
-
 }
 
 function getPlayerName(){
-    //get player name
-    // mainContent.style.display = "flex";
-    // mainContent.style.flexDirection = "column";
-    
     mainContent.classList = "";
-    // removeInGameClass(mainContent);
-    // removeInGameClass(body);
     removeElementClass(body, 'in-game');
 
     mainContent.innerHTML = `
@@ -1210,53 +988,10 @@ function getPlayerName(){
     formPlayerData.style.display = "flex";
     formPlayerData.style.flexDirection = "column";
     formPlayerData.style.alignItems = "center";
-    // btnSubmitPlayerName.addEventListener('click', submitHighScore);
-    // addEventListenerBtnReturnHome(btnCancelSubmitPlayerName);
-     userLogin.innerHTML = ``;
+    userLogin.innerHTML = ``;
 }
 
-/* async function checkCurrentScore(currentScore, sortedScores){
-    // if(currentScore > sortedScores[sortedScores.length-1].score){
-    //     // send ID of lowest score to database, to be removed
-    //     let deleteScoreId = sortedScores[sortedScores.length-1]._id
-
-    //     let newHighScore = {
-    //         name: player_name,
-    //         score: currentScore,
-    //         id: deleteScoreId       // a new id will be generated by database when new record added
-    //     };
-
-    //     // console.log('DATA SENT TO DATABASE: ')
-    //     // console.log(newHighScore);
-
-    //     // send currentScore to database
-    //     const options = {
-    //         method: 'POST',
-    //         headers: {
-    //             'Content-Type': 'application/json',
-    //         },
-    //         body: JSON.stringify(newHighScore),
-    //     };
-
-    //     // const response = await fetch('/api', options);
-    //     // const json = await response.json();
-    //     // console.log(json.data);      // moved to submit()
-        
-    //     showHighScore(); // refresh high score list
-    // }else{
-    //     // do nothing
-    // }
- }*/
-
-// in game menu
-
-// btnMenu.addEventListener('click', toggleMenu);      // to go in startgame function
-// btnContinue.addEventListener('click', toggleMenu);  // to go in startgame function
-let flagToggleMenu = false;
-
 function addInGameMenu(){
-    // in-game menu
-
     scoreboard.innerHTML += `<button id="btnMenu"></button>`;
     btnMenu.addEventListener('click', toggleMenu);
 
