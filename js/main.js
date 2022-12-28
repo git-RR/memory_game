@@ -58,6 +58,21 @@ let colorBlock = true;
 let fullscreenMode = true;
 let displayClass = `${difficulty}Mode`;     // easyMode normalMode hardMode; changes how blocks are displayed
 
+let saveGameData = {
+    playerName: '',
+    // passphrase: '',
+    date : '',
+    game: '',
+    score: 0,
+    tries: 0,
+    blockMap: [],
+};
+
+let userDetails = {
+    playerName: '',
+    passphrase: '',
+}
+
 homeScreen();
 
 window.addEventListener('click', playBgAudio);
@@ -1023,8 +1038,6 @@ function addInGameMenu(){
         
     });
 
-    // btnSave.addEventListener('click', saveGame);
-
     btnSave.addEventListener('click', async ()=>{
 
         btnSave.disabled = true;
@@ -1032,7 +1045,7 @@ function addInGameMenu(){
         prepareSaveGame();
 
         if( navigator.onLine ){
-            // allow user to login/register and save game
+            // allow user to login/register before save game
 
             if( getUserDetails() ){
                 // user logged in
@@ -1051,33 +1064,13 @@ function addInGameMenu(){
         
                 btnSubmitPlayerName.addEventListener('click', async () => {
         
-                    // btnSubmitPlayerName.disabled = true;
                     const successfulLogin = await playerProfile(); // return null when fail
         
                     if( successfulLogin ) {
                         // user logged in or created new account
     
-                        // change screen back to game screen
-    
-                        // setTimeout( () => {
-                        //     returnToGame();
-                        //     toggleMenu();
-
-                                // // then save game
-                                // await saveGame();
-            
-                                // // return to game
-                                // setTimeout( () => {
-                                //     returnToGame();
-                                //     toggleMenu();
-                                // }, 2000 );
-
-                        // }, 2000 );
-    
-                        // then save game
                         await saveGame();
     
-                        // return to game
                         setTimeout( () => {
                             returnToGame();
                             toggleMenu();
@@ -1109,7 +1102,6 @@ function addInGameMenu(){
             message_text.innerText = `game saved!`;
             message_text.classList = '';
 
-            // return to game
             setTimeout( () => {
                 returnToGame();
                 toggleMenu();
@@ -1130,42 +1122,19 @@ function toggleMenu(){
         }, 500);
         inGameMenu.style.left = "0";
         inGameMenu.style.opacity = "1";
-
         flagToggleMenu = true;
     }else{
         // hide menu
         menuBg.removeEventListener('click', toggleMenu);
         menuBg.style.background = "rgba(0,0,0,0)";
-        // menuBg.style.transition = "";
         inGameMenu.style.opacity = "0";
         setTimeout( ()=>{ inGameMenu.style.left = "200vw"; }, 500 );
-        // inGameMenu.style.left = "100vw";
-
         flagToggleMenu = false;
     }
 }
 
-// SAVE GAME (BASIC)
-
-let saveGameData = {
-    playerName: '',
-    // passphrase: '',
-    date : '',
-    game: '',
-    score: 0,
-    tries: 0,
-    blockMap: [],
-};
-
-let userDetails = {
-    playerName: '',
-    passphrase: '',
-}
-
 async function checkAndLoadGame(){
     btnLoad.disabled = true;
-
-    // prepareSaveGame();
 
     if( navigator.onLine ){
         // allow user to login/register and save game
@@ -1173,16 +1142,7 @@ async function checkAndLoadGame(){
         if( getUserDetails() ){
             // user logged in
 
-            // showUserFeedback();
-            // const message_text = document.getElementById('message_text');
-            // message_text.innerText = `loading...`;
-
             await loadGame();
-
-            // setTimeout( () => {
-            //     returnToGame();
-            //     // toggleMenu();
-            // }, 2000 );
 
         } else {
             // user not logged in
@@ -1208,12 +1168,6 @@ async function checkAndLoadGame(){
                     }
                     
                 });
-        
-                // btnCancelSubmitPlayerName.addEventListener('click', ()=>{
-                //     // returnToGame();
-                //     // toggleMenu();
-                //     homeScreen(); // caused instant swicth to home instead of fade
-                // });
 
                 addEventListenerBtnReturnHome(btnCancelSubmitPlayerName);
 
@@ -1222,10 +1176,9 @@ async function checkAndLoadGame(){
             } , ScreenTransitionDuration);
     
         }
+
     } 
-    // else {
-    //     message_text.innerText = `feature cannot be used when offline`;
-    // }
+
 }
 
 async function loadGame(){
@@ -1248,7 +1201,7 @@ async function loadGame(){
 
     if( loadedGameData.data === 08 || loadedGameData.data === 09 ) {
         // 08 - authentication failed; 09 - no game data to load
-        // console.log(data.message) // uncomment to check error message
+        // console.log(data.message)                                    // uncomment to check error message
         if( loadedGameData.data === 09 ){
             message_text.innerText = `no previous save data!`;
         } else {
@@ -1281,125 +1234,6 @@ async function loadGame(){
 
 }
 
-// old load game - required user cred's before each load
-// function loadGame(){
-//     // load prev save-game
-
-//     // let url = "/api/save-game/?";
-//     // let data = {name: 'sakura'};
-//     // url.searchParams.append("name",data('name'));
-//     // url = encodeURI(url.slice(0, -1));
-//     // url += "name"+"="+data.name+"&pwd=12345";
-
-//     // only proceed when navigator.online === true
-//     if( navigator.onLine ){
-//         getPlayerName();
-
-//         // newPlayerCheckbox.parentNode.setAttribute('hidden', true); // display: flex overrides attribute
-
-//         newPlayerCheckbox.parentNode.style.display = "none";
-
-//         btnSubmitPlayerName.addEventListener('click', async () => {
-
-//             let numberOfInvalidInputs = formPlayerData.querySelectorAll(":invalid").length;
-//             if(numberOfInvalidInputs) return;
-
-//             scoreboard.innerHTML = `<h1 class="loading-text">loading...</h1>`;
-
-//             btnSubmitPlayerName.disabled = true;
-
-//             saveGameData.playerName = playerName.value;
-//             userDetails.playerName = playerName.value;
-//             userDetails.passphrase = passphrase.value;
-
-//             let url = "/api/save-game/?";
-//             url += "playerName="+saveGameData.playerName+"&loadGame=1"+"&identifier="+userDetails.passphrase;
-//             url = encodeURI(url);
-//             const response = await fetch(url);
-//             const loadedGameData = await response.json();
-
-//             console.log('LOADED DATA:')
-//             console.log(loadedGameData)
-//             console.log('------------------------------')
-//             // console.log('selected blocks')
-//             // console.log(selectedBlocks);
-
-//             // fetch(url)
-//             // .then(res => {return res.text();})
-//             // .then(txt => {alert(txt);})
-//             if( loadedGameData.data === 403 ) { // incorrect input cred's
-//                 // alert(loadedGameData.message);
-//                 alert('load failed. check details and try again.');
-//                 return;
-//             }
-            
-//             if( loadedGameData.data === 404 ) {
-//                 console.log(loadedGameData.message);
-//             } else{
-//                 // console.log(loadedGameData.playerName, loadedGameData.blockMap);
-//                 saveGameData.date       = loadedGameData.date;
-//                 saveGameData.game       = loadedGameData.game;
-//                 saveGameData.score      = loadedGameData.score;
-//                 saveGameData.tries      = loadedGameData.tries;
-//                 saveGameData.blockMap   = [];
-//                 if( loadedGameData.blockMap ){                                          // condition only for test
-//                     loadedGameData.blockMap.forEach(block=>{saveGameData.blockMap.push(block);});
-//                 }
-
-//                 returnToGame();
-//             }
-            
-//             // put response into local object and call returnToGame
-//         });
-//         addEventListenerBtnReturnHome(btnCancelSubmitPlayerName);
-        
-//     } else {
-//         mainContent.style.justifyContent = "space-evenly";
-//         mainContent.innerHTML = `
-//             <h1>You're not connected.</h1>
-//             <button id="btnReturnHome" class="btn-type-a">Return</button>
-//         `;
-//         btnReturnHome = document.getElementById("btnReturnHome");
-//         addEventListenerBtnReturnHome(btnReturnHome);
-//     }
-    
-
-    
-// /*
-//     if( saveGameData.tries === 0 ) {
-//         // start new game
-//         alert('no game data to load');
-//     } else {
-//         // load game
-//         mainContent.style.flexDirection = "row";    
-//         mainContent.innerHTML = saveGameData.game;
-//         scoreboard.innerHTML = `
-//             <h1>Score: <span id="scoreCount"></span></h1>
-//             <h1>Try: <span id="tryCount"></span></h1>
-//         `;
-
-//         scoreValue = saveGameData.score;
-//         tryValue = saveGameData.tries;
-        
-//         scoreCount.innerText = scoreValue;
-//         tryCount.innerText = tryValue;
-
-//         blocks = document.querySelectorAll(".block");
-//         blocksArr = Array.from(blocks);                   // or  arr = [...nodeList]
-//         blockMap = saveGameData.blockMap;
-//         blockMap = [];
-//         saveGameData.blockMap.forEach(block=>{blockMap.push(block);});
-//         //console.log(blocks)
-//         addBlockEventListeners();
-
-//         addInGameMenu();
-
-//         alert('game data loaded');
-//         console.log(blockMap);
-//         console.log(saveGameData.blockMap);
-//     }*/
-// }
-
 function returnToGame() {
     
     if( fullscreenMode && document.fullscreenEnabled && !document.fullscreenElement ){
@@ -1408,57 +1242,39 @@ function returnToGame() {
             .catch((err)=>{ console.log(err); });
     }
 
-    // mainContent.classList = "in-game";
     addElementClass(mainContent, 'in-game', displayClass);
     addElementClass(body, 'in-game');
     addElementClass(scoreboard, 'in-game-scoreboard');
-    // addInGameClass(mainContent);
-    // addInGameClass(body);
-    // scoreboard.classList = "in-game-scoreboard";
 
-    //if( saveGameData.tries === 0 ) {
-        // start new game
-        // startGame();
-        // alert('no game data to load');
-    //} else {
-        // load game
-        // mainContent.style.flexDirection = "row";  
-        mainContent.innerHTML = saveGameData.game;
-        scoreboard.innerHTML = `
-            <h1>Score: <span id="scoreCount"></span></h1>
-            <h1>Try: <span id="tryCount"></span></h1>
-        `;
+    mainContent.innerHTML = saveGameData.game;
+    scoreboard.innerHTML = `
+        <h1>Score: <span id="scoreCount"></span></h1>
+        <h1>Try: <span id="tryCount"></span></h1>
+    `;
 
-        difficulty = saveGameData.difficulty;
+    difficulty = saveGameData.difficulty;
 
-        setScoringSystem();
+    setScoringSystem();
 
-        scoreValue = saveGameData.score;
-        tryValue = saveGameData.tries;
-        
-        scoreCount.innerText = scoreValue;
-        tryCount.innerText = tryValue;
+    scoreValue = saveGameData.score;
+    tryValue = saveGameData.tries;
+    
+    scoreCount.innerText = scoreValue;
+    tryCount.innerText = tryValue;
 
-        blocks = document.querySelectorAll(".block");
-        blocksArr = Array.from(blocks);                   // or  arr = [...nodeList]
-        blockMap = saveGameData.blockMap;
-        // blockMap = [];
-        // saveGameData.blockMap.forEach(block=>{blockMap.push(block);});
-        //console.log(blocks)
-        if( blocks[0].classList.contains("easyMode") ){
-            removeElementClass(mainContent, 'normalMode', 'hardMode');
-            addElementClass(mainContent, 'in-game', 'easyMode');
-        }
-        addBlockEventListeners();
+    blocks = document.querySelectorAll(".block");
+    blocksArr = Array.from(blocks);
+    blockMap = saveGameData.blockMap;
 
-        addInGameMenu();
-        (darkMode)?addElementClass(btnMenu, 'darkMode'):'';
+    if( blocks[0].classList.contains("easyMode") ){
+        removeElementClass(mainContent, 'normalMode', 'hardMode');
+        addElementClass(mainContent, 'in-game', 'easyMode');
+    }
+    
+    addBlockEventListeners();
+    addInGameMenu();
+    (darkMode)?addElementClass(btnMenu, 'darkMode'):'';
 
-
-        // alert('game data loaded');
-        // console.log(blockMap);
-        // console.log(saveGameData.blockMap);
-    //}
 }
 
 function prepareSaveGame() {
@@ -1470,7 +1286,7 @@ function prepareSaveGame() {
 
     document.querySelectorAll('.block').forEach(block=>{
         if(!block.classList.contains("found")){
-            // console.log('block selected will be reset before save');
+            // reset any attempts before save
             block.children[0].style.opacity = '0';
         }
     });
@@ -1483,28 +1299,14 @@ function prepareSaveGame() {
     saveGameData.score      = parseInt(scoreCount.innerText);
     saveGameData.tries      = parseInt(tryCount.innerText);
     saveGameData.difficulty = difficulty;
-    // console.log(blockMap);
-    // console.log(saveGameData.blockMap);
-    saveGameData.blockMap = [];
+    saveGameData.blockMap   = [];
     blockMap.forEach(block=>{saveGameData.blockMap.push(block);});
-    // for (let i = 0; i < blockMap.length; i++) {
-    //     blockMap[i] = saveGameData.blockMap[i];
-    // }
     toggleMenu(); // hide in-game menu
 }
 
 async function saveGame() {
 
-    // change all scoreboard changes to overlay text changes
-    // make overlay first from end game screen
-
     showUserFeedback();
-    // const userFeedback = `
-    //     <div id="feedbackScreen">
-    //         <h5 id="message_text" class="loading-text light-text">please wait...</h5>
-    //     </div>
-    // `;
-    // mainContent.innerHTML += userFeedback;
 
     saveGameData.playerName = userDetails.playerName;
     
@@ -1515,9 +1317,8 @@ async function saveGame() {
     const message_text = document.getElementById('message_text');
 
     message_text.innerText = `saving...`;
-    // scoreboard.innerHTML = `<h1 class="loading-text">saving...</h1>`;
 
-    if( navigator.onLine ){ // this check is redundant (savegame is only called when online)
+    if( navigator.onLine ){ // redundant check 
         // try update first
         const options = {
             method: 'PUT',
@@ -1532,11 +1333,9 @@ async function saveGame() {
             // update succeeded
             message_text.innerText = `game progress updated!`;
             message_text.classList = '';
-            // scoreboard.innerHTML = `<h1 class="">Game Progress Updated!</h1>`;
         } else {
             if ( json1.data === 06 ) {
-                // update failed
-                // try create
+                // update failed; try create
                 const options = {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', },
@@ -1548,11 +1347,9 @@ async function saveGame() {
 
                 message_text.innerText = `game saved to cloud!`;
                 message_text.classList = '';
-                // scoreboard.innerHTML = `<h1 class="">Game Saved To Cloud!</h1>`;
             } else {
                 message_text.innerText = `failed to save game.`;
                 message_text.classList = '';
-                // scoreboard.innerHTML = `<h1 class="">Failed To Save Game.</h1>`;
             }
         }
 
@@ -1560,143 +1357,24 @@ async function saveGame() {
         // not connected - only save local
         message_text.innerText = `game saved!`;
         message_text.classList = '';
-        // scoreboard.innerHTML = `<h1 class="">Game Saved!</h1>`;
     }
 
     delete saveGameData.passphrase; // remove to prevent save with game data
 
-    console.log('AFTER SAVE: CHECK NO PWD');
-    console.log(saveGameData);
-
-    // setTimeout( () => {
-    //     returnToGame();
-    //     toggleMenu();
-    // }, 2000 );
-
-    // hide overlay
 }
 
-
-// old saveGame() - required user cred's every time user saves game
-// async function saveGame() {
-//     let numberOfInvalidInputs = formPlayerData.querySelectorAll(":invalid").length;
-//     if(numberOfInvalidInputs) return;
-
-//     saveGameData.playerName = playerName.value;
-//     saveGameData.passphrase = passphrase.value;     // passphrase not stored in 'save-game-data' db; in user creds db
-
-//     saveGameLocal();
-
-//     scoreboard.innerHTML = `<h1 class="loading-text">saving...</h1>`;
-
-//     // only proceed from here down when (navigator.onLine === true)
-
-//     if( navigator.onLine ){
-
-//         let newPlayerFlag = newPlayerCheckbox.checked;
-//         let foundPlayerNameFlag = false;
-
-//         // check whether playername is taken
-
-//         let url = "/api/save-game/?";
-//         url += "playerName"+"="+saveGameData.playerName+"&loadGame=0";
-//         url = encodeURI(url);
-//         const resData = await fetch(url);
-//         const usernameCheck = await resData.json();
-//         console.log('Check for username returned: ');
-//         console.log(usernameCheck);
-//         if( usernameCheck.status === "available" ) {
-//             foundPlayerNameFlag = false;
-//         } else {
-//             foundPlayerNameFlag = true;
-//         }
-
-
-//         if( newPlayerFlag ) {                                       // use 'POST' to create new
-
-//             console.log('trying to create new save game...');
-
-//             if( foundPlayerNameFlag ) {                             // do not proceed; username exists; alert user
-//                 alert('that username is taken.');
-//                 scoreboard.innerHTML = `<h1 class="">That Username is Taken.</h1>`;
-//                 console.log('create failed.');
-//                 return; 
-//             }
-
-//             // console.log('SAVED DATA:')
-//             // console.log(saveGameData)
-//             // console.log('------------------------------')
-
-//             // create new save game
-//             console.log('POSTING!!')
-//             const options = {
-//                 method: 'POST',
-//                 headers: { 'Content-Type': 'application/json', },
-//                 body: JSON.stringify(saveGameData),
-//             };
-
-//             const response = await fetch('/api/save-game/', options);
-//             const json = await response.json();
-
-//             console.log('create successful.')
-//             console.log(json.data);
-
-//         } else {                                                    // use 'PUT' to update
-            
-//             if( !foundPlayerNameFlag ) {                             // do not proceed; username does not exist; alert user
-//                 alert('that username is not found.');
-//                 scoreboard.innerHTML = `<h1 class="">Username Not Found.</h1>`;
-//                 console.log('overwrite failed.')
-//                 return;
-//             }
-//             // console.log('cannot yet update save games!!!');
-//             // update existing save game
-
-//             const options = {
-//                 method: 'PUT',
-//                 headers: { 'Content-Type': 'application/json', },
-//                 body: JSON.stringify(saveGameData),
-//             };
-
-//             const response = await fetch('/api/save-game', options);
-//             const json = await response.json();
-//             // alert(json.data);
-//         }
-//         scoreboard.innerHTML = `<h1 class="">Game Saved to Cloud!</h1>`;
-//     } else {
-//         // not connected - only save local
-//         scoreboard.innerHTML = `<h1 class="">Game Saved!</h1>`;
-//     }
-
-//     setTimeout( () => {
-//         returnToGame();
-//         toggleMenu(); // show
-//     }, 2000 );
-//     // alert('game data saved');
-
-// }
-
 function saveGameLocal() {
-    // prepareSaveGame() must be called before saveGameLocal()
-
-    // showUserFeedback();
-
     localStorage.setItem("localSaveGameData", JSON.stringify(saveGameData));
-    console.log('game saved @ '+(new Date()).toString().substring(16,24));
-    
-    // message_text.innerText = `game saved!`;
-    // message_text.classList = '';
+    // console.log('game saved @ '+(new Date()).toString().substring(16,24));
 }
 
 function continueGame() {
     userLogin.innerHTML = ``;
-    console.log('getting data from local storage.');
     saveGameData = JSON.parse( localStorage.getItem("localSaveGameData") );
     returnToGame();
 }
 
 function fadeIn(e){
-    // console.log(e)
     e.style.transition = `opacity ${ScreenTransitionDuration}ms ease-in`;
     e.style.opacity = "1";
 }
@@ -1713,14 +1391,12 @@ async function playerProfile() {
 
     btnSubmitPlayerName.disabled = true;
 
-    // btnSubmitPlayerName.removeEventListener('click', playerProfile);
-
     userDetails.playerName = playerName.value;
     userDetails.passphrase = passphrase.value; 
 
     scoreboard.innerHTML = `<h1 class="loading-text">Please wait...</h1>`;
 
-    if( navigator.onLine ){ // this check is redundant
+    if( navigator.onLine ){ // redundant check
 
         let loginFlag = !(newPlayerCheckbox.checked); // unchecked for existing user
 
@@ -1735,10 +1411,10 @@ async function playerProfile() {
                 }
             ),
         };
-        console.log('OPTIONS : ', options);
+        // console.log('OPTIONS : ', options);
         const response = await fetch('/api/user-cred/', options);
         const json = await response.json();
-        console.log(json.status);
+        // console.log(json.status);
         scoreboard.innerHTML = `<h1 class="">${json.status}</h1>`;
 
         if ( !( json.data === 02 || json.data === 03 ) ) {
@@ -1751,37 +1427,15 @@ async function playerProfile() {
 
         localStorage.setItem("localUserDetails", JSON.stringify(userDetails));
     } else {
-        // not connected - only save local
-        // scoreboard.innerHTML = `<h1 class="">Player Details Saved!</h1>`;
-        // localStorage.setItem("localUserDetails", JSON.stringify(userDetails));
-
         // do nothing -  this function will not be called when offline
     }
 
     return true;
-
-    // setTimeout( () => {
-    //     homeScreen();
-    // }, 2000 );
-
 }
 
 function getUserDetails(){
-    // returns null when not found
-    return JSON.parse( localStorage.getItem("localUserDetails") );
+    return JSON.parse( localStorage.getItem("localUserDetails") );  // returns null when not found
 }
-
-// function (){
-//     fadeOut(mainSection);
-//     setTimeout(()=>{ 
-//         getPlayerName();
-        
-//         btnSubmitPlayerName.addEventListener('click', playerProfile);
-//         addEventListenerBtnReturnHome(btnCancelSubmitPlayerName);
-
-//         fadeIn(mainSection);
-//     } , ScreenTransitionDuration);
-// }
 
 function showUserFeedback(){
     const userFeedback = `
@@ -1807,14 +1461,12 @@ function setScoringSystem(){
 
 function updateScore(){
     const bonusPoint = 5;
-    if( tryValue - prevScoreTry === 1 ){ // player scored on prev turn
-        // chain bonus ++
-        scoreValue += bonusPoint; // add bonus point
-        console.log(`chain score bonus point: ${bonusPoint}`);
+
+    if( tryValue - prevScoreTry === 1 ){    // player scored on prev turn
+        scoreValue += bonusPoint;           // add bonus point
     }
 
     scoreValue += scorePoint;
-    console.log('new score: '+scoreValue);
 
     prevScoreTry = tryValue;
 
@@ -1828,10 +1480,6 @@ function calculateFinalScore(){
     const bonusPoint = 5;
     const maxScore = (scorePoint * numOfBlockPairs) + ( bonusPoint * (numOfBlockPairs-1) )
     // maxScore = (points from matching all blocks of chosen difficulty) + (max bonus points)
-
-    console.log('blocks : '+numOfBlocks);
-    console.log('attempts : '+tryValue);
-
 
     if( tryValue < numOfBlockPairs ){
         // Error case: not possible under correct operation
@@ -1851,30 +1499,27 @@ function calculateFinalScore(){
         // some blocks were seen twice or more, but not all blocks
         // no penalty
         // scoreValue = Math.ceil(scoreValue*1)
-        console.log("FINAL SCORE : "+scoreValue);
-        console.log('no penalty')
         return;
     }
     
     if( tryValue > numOfBlocks && tryValue <= (numOfBlocks * 1.5) ){
         // blocks were seen more than twice
+        // penalty #1
         scoreValue = Math.ceil(scoreValue*0.90);
-        console.log("FINAL SCORE : "+scoreValue);
-        console.log('penalty #1')
         return;
     }
 
     if( tryValue > (numOfBlocks*1.5) && tryValue <= ( numOfBlocks * 2 )){
+        // blocks were seen multiple times
+        // penalty #2
         scoreValue = Math.ceil(scoreValue*0.80);
-        console.log("FINAL SCORE : "+scoreValue);
-        console.log('penalty #2')
         return;
     }
 
     if( tryValue > ( numOfBlocks * 2 ) ){
+        // all greater numbers of attempts
+        // penalty #3
         scoreValue = Math.ceil(scoreValue*0.70);
-        console.log("FINAL SCORE : "+scoreValue);
-        console.log('penalty #3')
         return;
     }
 
