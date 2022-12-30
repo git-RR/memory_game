@@ -1,8 +1,10 @@
 
-const mainContent = document.getElementById("mainContent");
-const scoreboard = document.getElementById("scoreboard");
-const body = document.querySelector('body');
-const userLogin = document.getElementById('userLogin');
+const mainContent   = document.getElementById("mainContent");
+const scoreboard    = document.getElementById("scoreboard");
+const body          = document.querySelector('body');
+const userLogin     = document.getElementById('userLogin');
+const soundtrack    = document.getElementById('soundtrack');
+const inGameMenu    = document.getElementById('inGameMenu');
 
 const homeScreenHTML = `
     <button id="btnContinue" class="btn-type-a" hidden>Continue</button>
@@ -46,7 +48,7 @@ let blockClicked = (event) => {
     }
 }
 
-const myPortfolioLink = "https://www.rishaadrajak.com";
+const myPortfolioLink = "http://rishaad.rajak.itvarsitystudent.org/";
 const ScreenTransitionDuration = 400;
 let col = 2;                                // row, col used to display blocks; default values not used
 let row = 1;
@@ -101,12 +103,13 @@ function homeScreen(){
     preferences();
     fadeIn(mainSection);
 
-    scoreboard.innerHTML = `<h1>New Game Name</h1>`;
+    scoreboard.innerHTML = `<h1>Memory Game</h1>`;
     scoreboard.classList = "";
     mainContent.classList = "";
     mainContent.style.display = "flex";
     mainContent.style.flexDirection = "column";
     mainContent.style.justifyContent = "center";
+    mainContent.style.height = "100%";
 
     mainContent.innerHTML = homeScreenHTML;
 
@@ -259,7 +262,7 @@ function showOptions(){
                     </tr>
                     <tr>
                         <td>Display Mode
-                            <div class="tooltip">
+                            <div class="tooltip ${(darkMode)?'darkMode':''}">
                                 i
                                 <span class="tooltip-text">
                                     'Dark' changes to dark theme, for gameplay in low-light environments.<br>
@@ -274,7 +277,7 @@ function showOptions(){
                     </tr>
                     <tr>
                         <td>Difficulty
-                            <div class="tooltip">
+                            <div class="tooltip ${(darkMode)?'darkMode':''}">
                                 i
                                 <span class="tooltip-text">
                                     Options here affect the scoring system and change the number of blocks to be matched.<br>
@@ -291,7 +294,7 @@ function showOptions(){
                     ${(document.fullscreenEnabled)?`
                             <tr>
                             <td>Fullscreen
-                                <div class="tooltip">
+                                <div class="tooltip ${(darkMode)?'darkMode':''}">
                                     i
                                     <span class="tooltip-text">
                                         Game automatically enters fullscreen by default. Change setting here to prevent going into fullscreen mode.
@@ -306,7 +309,7 @@ function showOptions(){
                     `:``}
                     <tr>
                         <td>Color Turned Blocks
-                            <div class="tooltip">
+                            <div class="tooltip ${(darkMode)?'darkMode':''}">
                                 i
                                 <span class="tooltip-text">
                                     An assistive feature that, when enabled, shows the blocks that have already been seen.<br>
@@ -321,7 +324,7 @@ function showOptions(){
                     </tr>
                     <tr>
                         <td>Local Save Data
-                            <div class="tooltip">
+                            <div class="tooltip ${(darkMode)?'darkMode':''}">
                                 i
                                 <span class="tooltip-text">
                                     Game data is saved locally and to the cloud (when playing online). To clear the local data click 'Clear All'.<br>
@@ -335,7 +338,7 @@ function showOptions(){
                     </tr>
                     <tr>
                         <td>More Info.
-                            <div class="tooltip">
+                            <div class="tooltip ${(darkMode)?'darkMode':''}">
                                 i
                                 <span class="tooltip-text">
                                     Click 'Help' to read Instructions, Game Features and Credits.
@@ -747,6 +750,7 @@ async function showHighScore(){
 
     mainContent.classList = "";
     mainContent.style.justifyContent = "space-evenly";
+    mainContent.style.height = "85%";
 
     userLogin.innerHTML = ``;
 
@@ -774,8 +778,9 @@ async function showHighScore(){
                     <table class="col-12">
                         <thead>
                             <tr>
-                                <th class="col-6">Player Name</th>
-                                <th class="col-6">Score</th>
+                                <th class="col-7">Player Name</th>
+                                <th class="col-3">Score</th>
+                                <th class="col-1"></th>
                             </tr>
                         </thead>
                         <tbody style="text-align: center;">
@@ -792,6 +797,7 @@ async function showHighScore(){
                     <tr>
                         <td>${highScores[i].playerName}</td>
                         <td>${highScores[i].score}</td>
+                        <td></td>
                     </tr>
                 `;
             }
@@ -803,6 +809,15 @@ async function showHighScore(){
                 <button id="btnReturnHome" class="btn-type-a">Return</button>
             `;
             mainContent.innerHTML = highSorePage;
+
+            const highscoreDiv = document.querySelector('#mainContent div.row');
+            highscoreDiv.style.height = '85%';
+            highscoreDiv.style.overflowY = 'scroll';
+
+            const highscoreHead = document.querySelector('#mainContent div.row table thead');
+            highscoreHead.style.position = 'sticky';
+            highscoreHead.style.top = '0';
+            (darkMode)?addElementClass(highscoreHead, 'darkMode'):'';
         } catch (error) {
             mainContent.innerHTML =  `
                 <h1>Cannot connect to database.</h1>
