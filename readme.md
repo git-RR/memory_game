@@ -1,4 +1,4 @@
-# New Game Name
+# Memory Game
 A simple memory game made using only HTML, CSS and JavaScript. It has typical game features such as cloud save-game and high-score submits. This game runs in the browser, and does **not** require any download/installation. 
 
 ## About

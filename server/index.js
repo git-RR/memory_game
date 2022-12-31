@@ -10,7 +10,7 @@ const DATABASE                  = "new_game";
 const COLLECTION_HIGHSCORE      = "high-scores";
 const COLLECTION_SAVE_DATA      = "save_game_data"; 
 const COLLECTION_USER_CREDS     = "user_creds"; 
-const high_score_list_limit     = 10;
+const high_score_list_limit     = 25;
 
 app.listen(port, ()=>{console.log(`listening @ port ${port}`)});
 app.use(express.json());
