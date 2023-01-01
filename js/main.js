@@ -49,6 +49,7 @@ let blockClicked = (event) => {
 }
 
 const myPortfolioLink = "http://rishaad.rajak.itvarsitystudent.org/";
+const baseURL = "https://chartreuse-green-scallop-tam.cyclic.app";
 const ScreenTransitionDuration = 400;
 let col = 2;                                // row, col used to display blocks; default values not used
 let row = 1;
@@ -862,9 +863,9 @@ async function getHighScore( signal = null ){
         try{
             let response;
             if( signal ){
-                response = await fetch("/api/highscore", {method:'get', signal:signal});
+                response = await fetch(`${baseURL}/api/highscore`, {method:'get', signal:signal});
             } else {
-                response = await fetch("/api/highscore");
+                response = await fetch(`${baseURL}/api/highscore`);
             }
 
             const json = await response.json();
@@ -986,7 +987,7 @@ async function submitHighScore(){
         body: JSON.stringify(newHighScore),
     };
     
-    const response = await fetch('/api/highscore', options);
+    const response = await fetch(`${baseURL}/api/highscore`, options);
     const json = await response.json();
 
     if( json.data === 10 || json.data === 11 ){
@@ -1207,7 +1208,7 @@ async function loadGame(){
     userDetails.playerName = localUserDetails.playerName;
     userDetails.passphrase = localUserDetails.passphrase;
 
-    let url = "/api/save-game/?";
+    let url = `${baseURL}/api/save-game/?`;
     url += "playerName="+userDetails.playerName+"&identifier="+userDetails.passphrase;
     url = encodeURI(url);
 
@@ -1341,7 +1342,7 @@ async function saveGame() {
             body: JSON.stringify(saveGameData),
         };
 
-        const response = await fetch('/api/save-game', options);
+        const response = await fetch(`${baseURL}/api/save-game`, options);
         const json1 = await response.json();
 
         if( json1.data === 07 ) {
@@ -1357,7 +1358,7 @@ async function saveGame() {
                     body: JSON.stringify(saveGameData),
                 };
     
-                const response = await fetch('/api/save-game/', options);
+                const response = await fetch(`${baseURL}/api/save-game/`, options);
                 const json2 = await response.json();
 
                 message_text.innerText = `game saved to cloud!`;
@@ -1427,7 +1428,7 @@ async function playerProfile() {
             ),
         };
         // console.log('OPTIONS : ', options);
-        const response = await fetch('/api/user-cred/', options);
+        const response = await fetch(`${baseURL}/api/user-cred/`, options);
         const json = await response.json();
         // console.log(json.status);
         scoreboard.innerHTML = `<h1 class="">${json.status}</h1>`;
