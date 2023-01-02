@@ -35,7 +35,6 @@ body {
   height: 100vh;
   overflow-x: hidden;
   font-family: Helvetica, Arial, sans-serif;
-  transition: 1000ms ease-in-out;
   /*Safari */ }
   body:not(:root):fullscreen::backdrop {
     background: #fff !important; }
@@ -58,7 +57,6 @@ h1 {
 
 main {
   width: 100%;
-  height: 100%;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
@@ -78,11 +76,12 @@ ul {
 
 @media (min-width: 600px) {
   main {
-    justify-content: center; } }
+    justify-content: center;
+    height: 100%; } }
 img.face-img {
   opacity: 0;
   width: 100%;
-  box-shadow: 0 0 0px 10px white;
+  box-shadow: 0 0 20px 20px white;
   transition: opacity 0.5s ease-in; }
 
 table {
@@ -140,7 +139,6 @@ label span {
 
 #mainSection {
   width: 100%;
-  transition: 1000ms ease-in-out;
   opacity: 0;
   overflow-x: hidden; }
   #mainSection.darkMode {
@@ -166,6 +164,8 @@ label span {
     padding-top: 6rem; }
   #mainContent table {
     width: min(100%, 600px); }
+  #mainContent h1 {
+    text-align: center; }
 
 #userLogin {
   display: block;
@@ -321,7 +321,7 @@ label span {
   -moz-box-shadow: -6px -6px 0 0 grey;
   box-shadow: -6px -6px 0 0 grey;
   border: 2px solid grey;
-  padding: 0.8rem;
+  padding: 0.6rem 0.3rem;
   background-color: #222;
   color: #fff;
   transition: 0.4s ease-in-out; }
@@ -348,12 +348,14 @@ label span {
   border-top: 40px solid grey;
   border-bottom: 0;
   border-left: 30px solid white;
-  border-right: 30px solid white;
-  /* other */ }
+  border-right: 30px solid white; }
   #btnMenu.darkMode {
     border-left: 30px solid #222;
     border-right: 30px solid #222; }
 
+@media (min-width: 600px) {
+  .btnOption {
+    padding: 0.8rem; } }
 #main-nav {
   display: flex;
   justify-content: center;
@@ -379,9 +381,9 @@ label span {
   -webkit-border-radius: 50px;
   -moz-border-radius: 50px;
   border-radius: 50px;
-  -webkit-box-shadow: 0 0 10px #fff;
-  -moz-box-shadow: 0 0 10px #fff;
-  box-shadow: 0 0 10px #fff;
+  -webkit-box-shadow: 0 0 0px #fff;
+  -moz-box-shadow: 0 0 0px #fff;
+  box-shadow: 0 0 0px #fff;
   border: 0px solid #777;
   position: relative;
   width: 22%;
@@ -427,7 +429,7 @@ label span {
   .menu .menu-btns {
     position: absolute;
     top: 25%;
-    right: 9%;
+    right: 0;
     display: flex;
     flex-direction: column;
     background: white;
@@ -442,6 +444,9 @@ label span {
     border: 2px solid grey;
     margin: 1rem; }
 
+@media (min-width: 600px) {
+  .menu .menu-btns {
+    right: 9%; } }
 .loading-text {
   font-size: 1.6rem;
   margin-top: 2rem;

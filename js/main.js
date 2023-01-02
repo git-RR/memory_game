@@ -33,9 +33,11 @@ let blockClicked = (event) => {
 
     selectedBlocks.push(blocksArr.indexOf(block));
     
-    if(colorBlock){
-        event.target.parentNode.style.backgroundColor = "#777"; 
-    }
+    event.target.parentNode.style.backgroundColor = "#fff";
+
+    // if(colorBlock){
+    //     event.target.parentNode.style.backgroundColor = "#777"; 
+    // }
 
     if(selectedBlocks.length>=2){
         removeBlockEventListeners();                    // prevents more than 2 blocks from being clicked
@@ -654,6 +656,15 @@ function checkIfBlocksMatch(){
         setTimeout(() => {
             block1.querySelector(" :nth-child(1)").style.opacity = '0';
             block2.querySelector(" :nth-child(1)").style.opacity = '0';
+
+            if(colorBlock){
+                block1.style.backgroundColor = "#777"; 
+                block2.style.backgroundColor = "#777"; 
+            }else{
+                block1.style.backgroundColor = "rgba(0,0,0,0)"; 
+                block2.style.backgroundColor = "rgba(0,0,0,0)"; 
+            }
+
         }, 800);
     }
 
