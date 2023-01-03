@@ -1256,6 +1256,7 @@ async function loadGame(){
     }
 
     setTimeout( () => {
+        userLogin.innerHTML = ``;
         returnToGame();
     }, 2000 );
 
